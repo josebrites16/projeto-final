@@ -4,16 +4,20 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Models\Rota;
 use App\Http\Controllers\RotasController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('home');
 });
-
+/*
 Route::get('/users', function () {
     return view('users', [
         'users' => User::all()
     ]);
 });
+*/
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
 Route::get('/users/{id}', function ($id) {
     $user = User::find($id);
