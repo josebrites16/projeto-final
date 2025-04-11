@@ -32,6 +32,7 @@
               <x-nav-link href="/rotas" :active="request()->is('rotas')">Rotas</x-nav-link>
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
               <x-nav-link href="/" :active="request()->is('/')">Estatísticas</x-nav-link>
+              <x-nav-link href="/faqs" :active="request()->is('faqs')">FAQ</x-nav-link>
             </div>
             <div class="hidden md:block">
               <div class="ml-4 flex items-center md:ml-6">

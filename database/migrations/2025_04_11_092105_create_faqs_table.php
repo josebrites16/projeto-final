@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->enum('zona', ['sul', 'centro', 'norte']);
+        Schema::create('faqs', function (Blueprint $table) {
+            $table->id();
+            $table->string('pergunta');
+            $table->text('resposta');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->dropColumn('zona');
-        });
+        Schema::dropIfExists('faqs');
     }
 };
