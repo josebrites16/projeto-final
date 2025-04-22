@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Rota;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class RotasController extends Controller
 {
@@ -135,18 +136,22 @@ class RotasController extends Controller
 
         $rota = Rota::findOrFail($id);
 
-        // Processar o upload da imagem se fornecida
+        
+        $dadosAtualizados = collect($validated)->except(['imagem'])->toArray();
+
+        // Substitui a imagem antiga, se uma nova for enviada
         if ($request->hasFile('imagem')) {
-            // Apagar a imagem antiga se existir
+            // Apaga a imagem antiga
             if ($rota->imagem && Storage::disk('public')->exists($rota->imagem)) {
                 Storage::disk('public')->delete($rota->imagem);
             }
-
-            $imagemPath = $request->file('imagem')->store('rotas', 'public');
-            $rotaData['imagem'] = $imagemPath;
+    
+            // Guarda a nova imagem
+            $novaImagem = $request->file('imagem')->store('rotas', 'public');
+            $dadosAtualizados['imagem'] = $novaImagem;
         }
-
-        $rota->update($rotaData);
+    
+        $rota->update($dadosAtualizados);
 
         return redirect()->route('rotas.show', $rota->id)
             ->with('success', 'Rota atualizada com sucesso.');

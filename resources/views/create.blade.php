@@ -11,7 +11,7 @@
             <div class="space-y-4 max-h-[600px] overflow-y-auto border border-gray-200 p-4 rounded-lg shadow-md bg-white">
                 <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200">
                     <h2 class="font-bold text-lg">Nova Rota</h2>
-                    <form id="rotaForm" action="{{ route('rotas.store') }}" method="POST">
+                    <form id="rotaForm" action="{{ route('rotas.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
                             <label for="titulo" class="block text-gray-700 text-sm font-bold mb-2">Título:</label>
@@ -32,11 +32,11 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="imagem">Imagem</label>
-                            <input type="file" class="form-control" id="imagem" name="imagem">
+                        <div class="mb-4">
+                            <label for="imagem" class="block text-gray-700">Imagem:</label>
+                            <input type="file" class="border border-gray-300 rounded-lg p-2 w-full" id="imagem" name="imagem">
                             @error('imagem')
-                            <div class="text-danger">{{ $message }}</div>
+                            <div class="text-red-500 mt-2">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="mb-4">
