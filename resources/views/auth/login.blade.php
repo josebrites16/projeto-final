@@ -11,7 +11,7 @@
                 @csrf
                 <x-form-field>
                     <x-form-label for="email">Email:</x-form-label>
-                    <x-form-input type="email" id="email" name="email" required />
+                    <x-form-input type="email" id="email" name="email" :value="old('email')" required />
                     <x-form-error name="email" />
                 </x-form-field>
 

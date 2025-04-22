@@ -14,27 +14,38 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
-          @if (!request()->is('login'))
+            @if (!request()->is('login'))
             <!-- Sidebar fixa -->
             <div class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-gray-800 flex-col p-4 space-y-2">
               <div class="mb-4">
                 <img class="size-10" src="https://laracasts.com/images/logo/logo-triangle.svg" alt="Logo">
               </div>
-              <!-- Sidebar Links -->
+              <!-- Sidebar Links -->´
+              @auth
               <x-nav-link href="/users" :active="request()->is('users')">Users</x-nav-link>
               <x-nav-link href="/rotas" :active="request()->is('rotas')">Rotas</x-nav-link>
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
               <x-nav-link href="/" :active="request()->is('/')">Estatísticas</x-nav-link>
               <x-nav-link href="/register" :active="request()->is('register')">Criar Administrador</x-nav-link>
+              @endauth
             </div>
             @endif
             <div class="hidden md:block">
               <div class="ml-4 flex items-center md:ml-6">
+
                 @guest
                 <div class="hidden md:block ml-auto">
                   <x-nav-link href="/login" :active="request()->is('login')">Login</x-nav-link>
                 </div>
                 @endguest
+
+                @auth
+                <form method="POST" action="/logout" class="hidden md:block ml-auto">
+                  @csrf
+                  <x-form-button>Log Out</x-form-button>
+                </form>
+                @endauth
+
               </div>
               <div class="-mr-2 flex md:hidden">
                 <!-- Mobile menu button -->
@@ -84,20 +95,20 @@
     </nav>
 
     <header class="bg-white shadow-sm w-full">
-    <div class="md:ml-64">
+      <div class="md:ml-64">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ $heading }}</h1>
+          <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ $heading }}</h1>
         </div>
-    </div>
-</header>
+      </div>
+    </header>
 
-<main>
-    <div class="md:ml-64">
+    <main>
+      <div class="md:ml-64">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            {{ $slot }}
+          {{ $slot }}
         </div>
-    </div>
-</main>
+      </div>
+    </main>
   </div>
 
 </body>

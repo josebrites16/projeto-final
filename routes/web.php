@@ -22,7 +22,7 @@ Route::get('/users/{id}', function ($id) {
     return view('user', ['user' => $user]);
 });
 
-
+Route::middleware(['auth'])->group(function () {
 Route::get('/rotas', [RotasController::class, 'index'])->name('rotas.index');
 Route::get('/rotas/create', [RotasController::class, 'create'])->name('rotas.create');
 Route::post('/rotas', [RotasController::class, 'store'])->name('rotas.store');
@@ -31,8 +31,13 @@ Route::get('/rotas/{id}/edit', [RotasController::class, 'edit'])->name('rotas.ed
 Route::put('/rotas/{id}', [RotasController::class, 'update'])->name('rotas.update'  );
 Route::delete('/rotas/{id}', [RotasController::class, 'destroy'])->name('rotas.destroy');
 
+
 Route::get('/register', [RegisterController::class, 'create']);
 Route::post('/register', [RegisterController::class, 'store']);
 
-Route::get('/login', [LoginController::class, 'create']);
+
+Route::post('/logout', [LoginController::class, 'destroy']);
+});
+
 Route::post('/login', [LoginController::class, 'store']);
+Route::get('/login', [LoginController::class, 'create']);

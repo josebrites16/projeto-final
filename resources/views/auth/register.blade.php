@@ -36,8 +36,8 @@
 
                 <x-form-field>
                     <x-form-label for="password_conf">Confirmar Password:</x-form-label>
-                    <x-form-input type="password" id="password_conf" name="password_conf" required />
-                    <x-form-error name="password_conf" />
+                    <x-form-input type="password" id="password_confirmation" name="password_confirmation" required />
+                    <x-form-error name="password_confirmation" />
                 </x-form-field>
                 
                 <div class="flex justify-end space-x-3 pt-4">
