@@ -29,6 +29,7 @@
               </div>
               <!-- Sidebar Links -->
               <x-nav-link href="/users" :active="request()->is('users')">Users</x-nav-link>
+              <x-nav-link href="/admins" :active="request()->is('admins')">Administradores</x-nav-link>
               <x-nav-link href="/rotas" :active="request()->is('rotas')">Rotas</x-nav-link>
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
               <x-nav-link href="/" :active="request()->is('/')">Estatísticas</x-nav-link>

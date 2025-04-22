@@ -17,12 +17,16 @@ Route::get('/users', function () {
 });
 */
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/admins', [UserController::class, 'admins'])->name('admins.index');
 Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::put('/users/{id}', [UserController::class, 'updateType'])->name('users.updateType');
 
 Route::get('/users/{id}', function ($id) {
     $user = User::find($id);
     return view('user', ['user' => $user]);
 });
+
+
 
 // Rotas para rotas (usando o controller)
 Route::get('/rotas', [RotasController::class, 'index'])->name('rotas.index');

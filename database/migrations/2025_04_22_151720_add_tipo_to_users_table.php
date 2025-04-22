@@ -10,19 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->enum('zona', ['sul', 'centro', 'norte']);
-        });
-    }
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->enum('tipo', ['admin', 'user'])->default('user')->after('email');
+    });
+}
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->dropColumn('zona');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('tipo');
         });
     }
 };
