@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->enum('zona', ['sul', 'centro', 'norte']);
+        Schema::create('ponto_imagens', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ponto_id')->constrained('pontos')->onDelete('cascade');
+            $table->string('caminho');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rotas', function (Blueprint $table) {
-            $table->dropColumn('zona');
-        });
+        Schema::dropIfExists('ponto_imagens');
     }
 };

@@ -39,6 +39,28 @@
                             <div class="text-red-500 mt-2">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div id="modalPonto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                            <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                                <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
+                                <input type="hidden" id="modal-index">
+                                <div class="mb-2">
+                                    <label>Título:</label>
+                                    <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
+                                </div>
+                                <div class="mb-2">
+                                    <label>Descrição:</label>
+                                    <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label>Imagens:</label>
+                                    <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
+                                </div>
+                                <div class="flex justify-end gap-2 mt-4">
+                                    <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                                    <button onclick="salvarPonto()" class="bg-blue-500 text-white px-4 py-2 rounded">Salvar</button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="mb-4">
                             <label for="distancia" class="block text-gray-700 text-sm font-bold mb-2">Distância (Km):</label>
                             <input type="text" id="distancia" name="distancia" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readonly>
@@ -77,6 +99,7 @@
             const drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
 
+            const pontosTuristicos = [];
             const drawControl = new L.Control.Draw({
                 edit: {
                     featureGroup: drawnItems
@@ -92,7 +115,8 @@
                             color: 'blue',
                             weight: 5
                         }
-                    }
+                    },
+                    marker: true
                 }
             });
             map.addControl(drawControl);
@@ -113,19 +137,87 @@
             }
 
             map.on('draw:created', function(e) {
-                drawnItems.clearLayers();
                 const layer = e.layer;
-                drawnItems.addLayer(layer);
-                const latlngs = layer.getLatLngs();
-                document.getElementById('distancia').value = calculateDistance(latlngs);
-                document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
+
+                if (e.layerType === 'marker') {
+                    const latlng = layer.getLatLng();
+                    layer.on('click', () => {
+                        abrirModal(latlng);
+                    });
+                    drawnItems.addLayer(layer);
+                } else if (e.layerType === 'polyline') {
+                    drawnItems.clearLayers();
+                    drawnItems.addLayer(layer);
+                    const latlngs = layer.getLatLngs();
+                    document.getElementById('distancia').value = calculateDistance(latlngs);
+                    document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
+                }
             });
 
             document.getElementById('rotaForm').addEventListener('submit', function(e) {
-                if (!document.getElementById('coordenadas').value) {
-                    e.preventDefault();
-                    alert("Desenhe uma rota antes de salvar.");
-                }
+                e.preventDefault();
+
+                const form = e.target;
+                const formData = new FormData(form);
+
+                pontosTuristicos.forEach((ponto, index) => {
+                    formData.append(`pontos[${index}][titulo]`, ponto.titulo);
+                    formData.append(`pontos[${index}][descricao]`, ponto.descricao);
+                    formData.append(`pontos[${index}][coordenadas]`, JSON.stringify(ponto.coordenadas));
+
+                    for (let i = 0; i < ponto.imagens.length; i++) {
+                        formData.append(`pontos[${index}][imagens][]`, ponto.imagens[i]);
+                    }
+                });
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        alert('Erro ao salvar');
+                    }
+                });
             });
+
+            function abrirModal(latlng) {
+                document.getElementById('modalPonto').style.display = 'flex';
+                document.getElementById('modalPonto').dataset.lat = latlng.lat;
+                document.getElementById('modalPonto').dataset.lng = latlng.lng;
+            }
+
+            function fecharModal() {
+                document.getElementById('modalPonto').style.display = 'none';
+                document.getElementById('modal-titulo').value = '';
+                document.getElementById('modal-descricao').value = '';
+
+                const inputImagens = document.getElementById('modal-imagens');
+                if (inputImagens) {
+                    inputImagens.value = null;
+                }
+            }
+
+            function salvarPonto() {
+                const titulo = document.getElementById('modal-titulo').value;
+                const descricao = document.getElementById('modal-descricao').value;
+                const imagens = document.getElementById('modal-imagens').files;
+
+                const lat = document.getElementById('modalPonto').dataset.lat;
+                const lng = document.getElementById('modalPonto').dataset.lng;
+
+                pontosTuristicos.push({
+                    titulo,
+                    descricao,
+                    imagens,
+                    coordenadas: {
+                        lat,
+                        lng
+                    }
+                });
+
+                fecharModal();
+            }
         </script>
 </x-layout>

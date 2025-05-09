@@ -70,20 +70,44 @@ class RotasController extends Controller
             'coordenadas' => 'required|json',
             'zona' => 'required|in:Sul,Centro,Norte',
             'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+            // Validação dos pontos
+            'pontos' => 'nullable|array',
+            'pontos.*.titulo' => 'required|string|max:255',
+            'pontos.*.descricao' => 'nullable|string',
+            'pontos.*.coordenadas' => 'required|json',
+            'pontos.*.imagens' => 'nullable|array',
+            'pontos.*.imagens.*' => 'image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
-        $rotaData = collect($validated)->except(['imagem'])->toArray();
+        $rotaData = collect($validated)->except(['imagem', 'pontos'])->toArray();
 
-        // Processar o upload da imagem se fornecida
         if ($request->hasFile('imagem')) {
-            $imagemPath = $request->file('imagem')->store('rotas', 'public');
-            $rotaData['imagem'] = $imagemPath;
+            $rotaData['imagem'] = $request->file('imagem')->store('rotas', 'public');
         }
 
-        Rota::create($rotaData);
+        $rota = Rota::create($rotaData);
 
-        return redirect()->route('rotas.index')
-            ->with('success', 'Rota criada com sucesso.');
+        // Se houver pontos turísticos incluídos
+        if ($request->has('pontos')) {
+            foreach ($request->pontos as $index => $pontoData) {
+                $ponto = $rota->pontos()->create([
+                    'titulo' => $pontoData['titulo'],
+                    'descricao' => $pontoData['descricao'] ?? '',
+                    'coordenadas' => $pontoData['coordenadas'],
+                ]);
+
+                // Verifica se este ponto tem imagens
+                if (isset($pontoData['imagens'])) {
+                    foreach ($pontoData['imagens'] as $imagem) {
+                        $path = $imagem->store('pontos', 'public');
+                        $ponto->imagens()->create(['caminho' => $path]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('rotas.index')->with('success', 'Rota criada com sucesso.');
     }
 
     /**
@@ -136,7 +160,7 @@ class RotasController extends Controller
 
         $rota = Rota::findOrFail($id);
 
-        
+
         $dadosAtualizados = collect($validated)->except(['imagem'])->toArray();
 
         // Substitui a imagem antiga, se uma nova for enviada
@@ -145,12 +169,12 @@ class RotasController extends Controller
             if ($rota->imagem && Storage::disk('public')->exists($rota->imagem)) {
                 Storage::disk('public')->delete($rota->imagem);
             }
-    
+
             // Guarda a nova imagem
             $novaImagem = $request->file('imagem')->store('rotas', 'public');
             $dadosAtualizados['imagem'] = $novaImagem;
         }
-    
+
         $rota->update($dadosAtualizados);
 
         return redirect()->route('rotas.show', $rota->id)
