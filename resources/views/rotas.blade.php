@@ -59,32 +59,52 @@
             <div class="space-y-4 max-h-[600px] overflow-y-auto border border-gray-200 p-4 rounded-lg shadow-md bg-white">
                 @if(count($rotas) > 0)
                 @foreach($rotas as $rota)
-                <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200">
-                    <a href="/rotas/{{ $rota['id'] }}" class="text-blue-500 hover:underline hover:text-blue-700">
-                        <h2 class="text-lg font-semibold"> {{ $rota['titulo'] }}</h2>
-                    </a>
-                    <p class="text-gray-600 mt-2">Descrição: {{ $rota['descricao'] }}</p>
-                    <p class="text-gray-600 ">Distância: {{ $rota['distancia'] }} km</p>
-                    @if(isset($rota['zona']))
-                    <div class="flex items-center">
-                        <i class="fas fa-map-marker-alt text-gray-600 mr-2"></i>
-                        <p class="text-gray-600 font-bold">Zona: {{ $rota['zona'] }}</p>
-                        <i class="fas fa-trash text-red-500 ml-auto cursor-pointer"
-                            onclick="confirmDeletion(event, {{ $rota['id'] }})"></i>
-                        <form id="delete-form-{{ $rota['id'] }}" action="{{ route('rotas.destroy', $rota['id']) }}" method="POST" class="hidden">
-                            @csrf
-                            @method('DELETE')
-                        </form>
+                <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200 flex flex-col md:flex-row items-stretch">
+
+                    {{-- Coluna Esquerda --}}
+                    <div class="md:w-1/2 w-full pr-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <a href="/rotas/{{ $rota['id'] }}" class="text-blue-500 hover:underline hover:text-blue-700">
+                                    <h2 class="text-lg font-semibold">{{ $rota['titulo'] }}</h2>
+                                </a>
+                                {{-- Ícone do caixote --}}
+                                <i class="fas fa-trash text-red-500 cursor-pointer ml-4" onclick="confirmDeletion(event, {{ $rota['id'] }})"></i>
+                            </div>
+
+                            <form id="delete-form-{{ $rota['id'] }}" action="{{ route('rotas.destroy', $rota['id']) }}" method="POST" class="hidden">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <p class="text-gray-600 mt-2">Descrição: {{ $rota['descricao'] }}</p>
+                            <p class="text-gray-600">Distância: {{ $rota['distancia'] }} km</p>
+                            @if(isset($rota['zona']))
+                            <div class="flex items-center mt-2">
+                                <i class="fas fa-map-marker-alt text-gray-600 mr-2"></i>
+                                <p class="text-gray-600 font-bold">Zona: {{ $rota['zona'] }}</p>
+                            </div>
+                            @endif
+                        </div>
                     </div>
-                    @endif
+
+                    {{-- Coluna Direita (Imagem) --}}
+                    <div class="md:w-1/2 w-full flex justify-center items-center mt-4 md:mt-0">
+                        @if(isset($rota['imagem']))
+                        <img src="{{ asset('storage/' . $rota['imagem']) }}" alt="Imagem da Rota" class="rounded-lg max-h-48 object-cover w-full md:ml-4">
+                        @else
+                        <div class="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400 md:ml-4 rounded-lg">
+                            Sem imagem
+                        </div>
+                        @endif
+                    </div>
                 </div>
                 @endforeach
                 @else
-                <div class="text-center py-8">
-                    <p class="text-gray-500">Nenhuma rota encontrada.</p>
-                </div>
+                <p class="text-gray-500">Nenhuma rota disponível.</p>
                 @endif
             </div>
+
 
             <div class="sticky top-4 bg-white shadow-md rounded-lg p-4 border border-gray-200 h-full">
                 <div id="map" class="h-[600px] rounded-lg shadow-md border border-gray-200"></div>

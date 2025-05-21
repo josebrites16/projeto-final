@@ -9,9 +9,14 @@ class Rota extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['titulo', 'descricao', 'distancia', 'coordenadas', 'zona','imagem'];
+    protected $fillable = ['titulo', 'descricao', 'distancia', 'coordenadas', 'zona', 'imagem'];
 
     protected $casts = [
         'coordenadas' => 'array'
     ];
+
+    public function pontos()
+    {
+        return $this->hasMany(Ponto::class);
+    }
 }
