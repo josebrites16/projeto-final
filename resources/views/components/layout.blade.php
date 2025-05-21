@@ -28,8 +28,10 @@
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
               <x-nav-link href="/" :active="request()->is('/')">Estatísticas</x-nav-link>
               <x-nav-link href="/register" :active="request()->is('register')">Criar Administrador</x-nav-link>
-              @endauth
               <x-nav-link href="/faqs" :active="request()->is('faqs')">FAQ</x-nav-link>
+              @endauth
+              
+              
             </div>
             @endif
             <div class="hidden md:block">
