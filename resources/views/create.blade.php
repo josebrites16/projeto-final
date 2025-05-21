@@ -11,6 +11,34 @@
             <div class="space-y-4 max-h-[600px] overflow-y-auto border border-gray-200 p-4 rounded-lg shadow-md bg-white">
                 <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200">
                     <h2 class="font-bold text-lg">Nova Rota</h2>
+                    <div id="modalPonto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                            <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                                <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
+                                <input type="hidden" id="modal-index">
+                                <div class="mb-2">
+                                    <label>Título:</label>
+                                    <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
+                                </div>
+                                <div class="mb-2">
+                                    <label>Descrição:</label>
+                                    <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label>Imagens:</label>
+                                    <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
+                                </div>
+                                <div id="modal-imagens-preview" class="mt-2 text-sm text-gray-700 hidden">
+                                    <label>Imagens já adicionadas:</label>
+                                    <ul class="list-disc list-inside mt-1" id="modal-imagens-list"></ul>
+                                </div>
+                                <div class="flex justify-end gap-2 mt-4">
+                                    <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                                    <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-blue-500 text-white px-4 py-2 rounded">
+                                        Salvar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     <form id="rotaForm" action="{{ route('rotas.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
@@ -39,28 +67,6 @@
                             <div class="text-red-500 mt-2">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div id="modalPonto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                            <div class="bg-white p-6 rounded-lg shadow-md w-96">
-                                <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
-                                <input type="hidden" id="modal-index">
-                                <div class="mb-2">
-                                    <label>Título:</label>
-                                    <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
-                                </div>
-                                <div class="mb-2">
-                                    <label>Descrição:</label>
-                                    <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
-                                </div>
-                                <div class="mb-2">
-                                    <label>Imagens:</label>
-                                    <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
-                                </div>
-                                <div class="flex justify-end gap-2 mt-4">
-                                    <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                                    <button onclick="salvarPonto()" class="bg-blue-500 text-white px-4 py-2 rounded">Salvar</button>
-                                </div>
-                            </div>
-                        </div>
                         <div class="mb-4">
                             <label for="distancia" class="block text-gray-700 text-sm font-bold mb-2">Distância (Km):</label>
                             <input type="text" id="distancia" name="distancia" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readonly>
@@ -68,7 +74,7 @@
                         </div>
                 </div>
                 <input type="hidden" name="coordenadas" id="coordenadas">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar Alterações</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar Rota</button>
                 <a href="/rotas" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Voltar á Lista</a>
                 </form>
                 <div class="mt-4 p-2 bg-gray-100 rounded-lg">
@@ -90,6 +96,8 @@
 
         <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
         <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
         <script>
             const map = L.map('map').setView([39.5, -8.0], 7);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -99,7 +107,10 @@
             const drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
 
-            const pontosTuristicos = [];
+            let polylineLayer = null;
+            let pontosTuristicos = JSON.parse(localStorage.getItem('pontosTuristicos') || '[]');
+            const markerRefs = [];
+
             const drawControl = new L.Control.Draw({
                 edit: {
                     featureGroup: drawnItems
@@ -108,18 +119,139 @@
                     polygon: false,
                     rectangle: false,
                     circle: false,
-                    marker: false,
+                    marker: true,
                     circlemarker: false,
                     polyline: {
                         shapeOptions: {
                             color: 'blue',
                             weight: 5
                         }
-                    },
-                    marker: true
+                    }
                 }
             });
             map.addControl(drawControl);
+
+            function salvarNaSessao() {
+                localStorage.setItem('pontosTuristicos', JSON.stringify(pontosTuristicos));
+            }
+
+            function adicionarMarker(latlng, preenchido = false, pontoIndex = null) {
+                const cor = preenchido ? 'blue' : 'gray';
+                const marker = L.circleMarker(latlng, {
+                    color: cor,
+                    fillColor: cor,
+                    fillOpacity: 1,
+                    radius: 8
+                }).addTo(drawnItems);
+
+                const index = markerRefs.length;
+                markerRefs.push(marker);
+
+                marker.on('click', () => {
+                    if (preenchido && pontoIndex !== null) {
+                        abrirModalVisualizacao(pontoIndex);
+                    } else {
+                        abrirModalEdicao(latlng, index);
+                    }
+                });
+
+                return index;
+            }
+
+            function abrirModalEdicao(latlng, markerIndex) {
+                const modal = document.getElementById('modalPonto');
+                modal.style.display = 'flex';
+                modal.dataset.lat = latlng.lat;
+                modal.dataset.lng = latlng.lng;
+                modal.dataset.index = markerIndex;
+
+                // Limpar inputs e ativar campos
+                document.getElementById('modal-titulo').value = '';
+                document.getElementById('modal-descricao').value = '';
+                document.getElementById('modal-imagens').value = '';
+                document.getElementById('modal-titulo').disabled = false;
+                document.getElementById('modal-descricao').disabled = false;
+                document.getElementById('btn-salvar-ponto').style.display = 'inline-block';
+                document.getElementById('modal-imagens-preview').classList.add('hidden');
+                document.getElementById('modal-imagens-list').innerHTML = '';
+                document.getElementById('modal-imagens').classList.remove('hidden');
+            }
+
+            function abrirModalVisualizacao(index) {
+                const ponto = pontosTuristicos[index];
+                const modal = document.getElementById('modalPonto');
+                modal.style.display = 'flex';
+
+                modal.dataset.lat = ponto.coordenadas.lat;
+                modal.dataset.lng = ponto.coordenadas.lng;
+                modal.dataset.index = index;
+
+                const tituloInput = document.getElementById('modal-titulo');
+                const descricaoInput = document.getElementById('modal-descricao');
+                const imagensInput = document.getElementById('modal-imagens');
+                const imagensPreview = document.getElementById('modal-imagens-preview');
+                const imagensList = document.getElementById('modal-imagens-list');
+
+                tituloInput.value = ponto.titulo;
+                tituloInput.disabled = true;
+
+                descricaoInput.value = ponto.descricao;
+                descricaoInput.disabled = true;
+
+                imagensInput.disabled = true;
+                imagensInput.classList.add('hidden');
+
+                imagensPreview.classList.remove('hidden');
+                imagensList.innerHTML = '';
+
+                if (ponto.imagens && ponto.imagens.length > 0) {
+                    ponto.imagens.forEach(img => {
+                        const nome = typeof img === 'string' ? img : img.name;
+                        imagensList.innerHTML += `<li>${nome}</li>`;
+                    });
+                } else {
+                    imagensList.innerHTML = '<li><em>Sem imagens</em></li>';
+                }
+
+                document.getElementById('btn-salvar-ponto').style.display = 'none';
+            }
+
+
+            function fecharModal() {
+                document.getElementById('modalPonto').style.display = 'none';
+            }
+
+            function salvarPonto(e) {
+                e.preventDefault();
+
+                const titulo = document.getElementById('modal-titulo').value;
+                const descricao = document.getElementById('modal-descricao').value;
+                const imagens = document.getElementById('modal-imagens').files;
+
+                const lat = parseFloat(document.getElementById('modalPonto').dataset.lat);
+                const lng = parseFloat(document.getElementById('modalPonto').dataset.lng);
+                const index = parseInt(document.getElementById('modalPonto').dataset.index);
+
+                const ponto = {
+                    titulo,
+                    descricao,
+                    imagens: Array.from(imagens),
+                    coordenadas: {
+                        lat,
+                        lng
+                    }
+                };
+
+                pontosTuristicos[index] = ponto;
+
+                markerRefs[index].setStyle({
+                    color: 'blue',
+                    fillColor: 'blue'
+                });
+
+                fecharModal();
+                salvarNaSessao();
+            }
 
             function calculateDistance(latlngs) {
                 let totalDistance = 0;
@@ -141,13 +273,16 @@
 
                 if (e.layerType === 'marker') {
                     const latlng = layer.getLatLng();
-                    layer.on('click', () => {
-                        abrirModal(latlng);
-                    });
-                    drawnItems.addLayer(layer);
-                } else if (e.layerType === 'polyline') {
-                    drawnItems.clearLayers();
-                    drawnItems.addLayer(layer);
+                    adicionarMarker(latlng, false, null);
+                }
+
+                if (e.layerType === 'polyline') {
+                    if (polylineLayer) {
+                        drawnItems.removeLayer(polylineLayer);
+                    }
+                    polylineLayer = layer;
+                    drawnItems.addLayer(polylineLayer);
+
                     const latlngs = layer.getLatLngs();
                     document.getElementById('distancia').value = calculateDistance(latlngs);
                     document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
@@ -175,6 +310,7 @@
                     body: formData
                 }).then(response => {
                     if (response.redirected) {
+                        localStorage.removeItem('pontosTuristicos');
                         window.location.href = response.url;
                     } else {
                         alert('Erro ao salvar');
@@ -182,42 +318,13 @@
                 });
             });
 
-            function abrirModal(latlng) {
-                document.getElementById('modalPonto').style.display = 'flex';
-                document.getElementById('modalPonto').dataset.lat = latlng.lat;
-                document.getElementById('modalPonto').dataset.lng = latlng.lng;
-            }
 
-            function fecharModal() {
-                document.getElementById('modalPonto').style.display = 'none';
-                document.getElementById('modal-titulo').value = '';
-                document.getElementById('modal-descricao').value = '';
-
-                const inputImagens = document.getElementById('modal-imagens');
-                if (inputImagens) {
-                    inputImagens.value = null;
-                }
-            }
-
-            function salvarPonto() {
-                const titulo = document.getElementById('modal-titulo').value;
-                const descricao = document.getElementById('modal-descricao').value;
-                const imagens = document.getElementById('modal-imagens').files;
-
-                const lat = document.getElementById('modalPonto').dataset.lat;
-                const lng = document.getElementById('modalPonto').dataset.lng;
-
-                pontosTuristicos.push({
-                    titulo,
-                    descricao,
-                    imagens,
-                    coordenadas: {
-                        lat,
-                        lng
-                    }
+            window.addEventListener('load', () => {
+                pontosTuristicos.forEach((ponto, index) => {
+                    const latlng = L.latLng(ponto.coordenadas.lat, ponto.coordenadas.lng);
+                    adicionarMarker(latlng, true, index);
                 });
-
-                fecharModal();
-            }
+            });
         </script>
+
 </x-layout>

@@ -117,11 +117,11 @@ class RotasController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function show(string $id)
-    {
-        $rota = Rota::findOrFail($id);
-        return view('rota', compact('rota'));
-    }
+     public function show(string $id)
+     {
+         $rota = Rota::with('pontos')->findOrFail($id); 
+         return view('rota', compact('rota'));
+     }
 
     /**
      * Show the form for editing the specified resource.

@@ -53,6 +53,7 @@
 
         const coordenadas = @json(json_decode($rota['coordenadas']));
 
+
         if (coordenadas.length > 0) {
             const latlngs = coordenadas.map(coord => [coord.lat, coord.lng]);
 
@@ -70,6 +71,17 @@
 
             L.marker(latlngs[0]).addTo(map).bindPopup("Início da Rota").openPopup();
             L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Fim da Rota");
+
+            const pontosTuristicos = @json($rota->pontos);
+
+            pontosTuristicos.forEach(ponto => {
+                if (ponto.coordenadas) {
+                    const coords = JSON.parse(ponto.coordenadas);
+                    L.marker([coords.lat, coords.lng])
+                        .addTo(map)
+                        .bindPopup(`<strong>${ponto.titulo}</strong>`);
+                }
+            });
         }
     </script>
 </x-layout>

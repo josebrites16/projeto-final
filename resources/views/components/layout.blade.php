@@ -25,7 +25,7 @@
             <!-- Sidebar fixa -->
             <div class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-gray-800 flex-col p-4 space-y-2">
               <div class="mb-4">
-                <img class="size-10" src="https://laracasts.com/images/logo/logo-triangle.svg" alt="Logo">
+                <img class="size-10"  alt="Logo">
               </div>
               <!-- Sidebar Links -->
               <x-nav-link href="/users" :active="request()->is('users')">Users</x-nav-link>
