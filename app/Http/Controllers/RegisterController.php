@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
@@ -29,4 +30,23 @@ class RegisterController extends Controller
 
         return redirect('/')->with('success', 'Your account has been created.');
     }
+
+    //PARA A APLICAÇÃO ANDROID
+    public function storeApi(Request $request)
+    {
+        $attributes = $request->validate([
+            'first_name' => ['required','max:255'],
+            'last_name' => ['required','max:255'],
+            'email' => ['required','email','max:255'],
+            'password' => ['required', Password::min(6), 'confirmed'] //confirmação
+        ]);
+
+        $attributes['tipo'] = 'admin'; 
+        $attributes['password'] = Hash::make($attributes['password']);
+
+        User::create($attributes);
+
+        return response()->json(['message' => 'User created successfully'], 201);
+    }
+    
 }

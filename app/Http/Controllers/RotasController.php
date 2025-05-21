@@ -199,4 +199,29 @@ class RotasController extends Controller
 
         return redirect()->route('rotas.index')->with('success', 'Rota eliminada com sucesso.');
     }
+
+
+    //Para a aplicação Android
+
+    public function getRotas()
+    {
+        $rotas = Rota::with('pontos')->get();
+        return response()->json($rotas);
+    }
+
+    public function getRota($id)
+    {
+        $rota = Rota::with('pontos')->find($id);
+        if (!$rota) {
+            return response()->json(['message' => 'Rota não encontrada'], 404);
+        }
+        return response()->json($rota);
+    }
+
+    public function getRotasByZona($zona)
+    {
+        $rotas = Rota::where('zona', $zona)->with('pontos')->get();
+        return response()->json($rotas);
+    }
+
 }

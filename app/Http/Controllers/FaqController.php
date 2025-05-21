@@ -98,4 +98,23 @@ class FaqController extends Controller
         return redirect()->route('faqs.index')->with('success', 'FAQ deleted successfully.');
         //
     }
+
+    //PARA A APLICAÇÃO ANDROID
+    public function indexApi(Request $request)
+    {
+        // Fetch all FAQs from the database
+        $faqs = Faq::all();
+
+        // Return the FAQs as JSON
+        return response()->json($faqs);
+    }
+
+    public function showApi($id)
+    {
+        // Find the FAQ by ID
+        $faq = Faq::findOrFail($id);
+
+        // Return the FAQ as JSON
+        return response()->json($faq);
+    }
 }
