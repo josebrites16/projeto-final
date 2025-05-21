@@ -1,6 +1,6 @@
 <x-layout>
     <x-slot:heading>
-        <h1 class="text-2xl font-bold text-center mb-4">Lista de Utilizadores</h1>
+        <h1 class="text-2xl font-bold text-center mb-4">Lista de Administradores</h1>
     </x-slot:heading>
 
     <!-- Fonte para envelope-->
@@ -18,11 +18,10 @@
                 </div>
             </form>
         </div>
-        <!-- Lista de utilizadores -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @if(count($users) > 0)
                 @foreach($users as $user)
-                 @if($user->tipo === 'user')
+                @if($user->tipo === 'admin')
                     <div class="bg-white shadow-md rounded-lg p-4 border border-gray-200">
                         <a href="/users/{{ $user['id'] }}" class="text-blue-500 hover:underline hover:text-blue-700">
                             <h2 class="text-lg font-semibold">{{ $user['first_name'] }} {{ $user['last_name'] }}</h2>
@@ -33,7 +32,7 @@
                 @endforeach
             @else
                 <div class="text-center py-8 col-span-2">
-                    <p class="text-gray-500">Nenhum utilizador encontrado.</p>
+                    <p class="text-gray-500">Nenhum administrador encontrado.</p>
                 </div>
             @endif
         </div>
