@@ -12,33 +12,33 @@
                 <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200">
                     <h2 class="font-bold text-lg">Nova Rota</h2>
                     <div id="modalPonto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                            <div class="bg-white p-6 rounded-lg shadow-md w-96">
-                                <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
-                                <input type="hidden" id="modal-index">
-                                <div class="mb-2">
-                                    <label>Título:</label>
-                                    <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
-                                </div>
-                                <div class="mb-2">
-                                    <label>Descrição:</label>
-                                    <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
-                                </div>
-                                <div class="mb-2">
-                                    <label>Imagens:</label>
-                                    <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
-                                </div>
-                                <div id="modal-imagens-preview" class="mt-2 text-sm text-gray-700 hidden">
-                                    <label>Imagens já adicionadas:</label>
-                                    <ul class="list-disc list-inside mt-1" id="modal-imagens-list"></ul>
-                                </div>
-                                <div class="flex justify-end gap-2 mt-4">
-                                    <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                                    <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-blue-500 text-white px-4 py-2 rounded">
-                                        Salvar
-                                    </button>
-                                </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                            <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
+                            <input type="hidden" id="modal-index">
+                            <div class="mb-2">
+                                <label>Título:</label>
+                                <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
+                            </div>
+                            <div class="mb-2">
+                                <label>Descrição:</label>
+                                <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label>Imagens:</label>
+                                <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
+                            </div>
+                            <div id="modal-imagens-preview" class="mt-2 text-sm text-gray-700 hidden">
+                                <label>Imagens já adicionadas:</label>
+                                <ul class="list-disc list-inside mt-1" id="modal-imagens-list"></ul>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                                <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-blue-500 text-white px-4 py-2 rounded">
+                                    Salvar
+                                </button>
                             </div>
                         </div>
+                    </div>
                     <form id="rotaForm" action="{{ route('rotas.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
@@ -74,7 +74,7 @@
                         </div>
                 </div>
                 <input type="hidden" name="coordenadas" id="coordenadas">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar Rota</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar Alterações</button>
                 <a href="/rotas" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Voltar á Lista</a>
                 </form>
                 <div class="mt-4 p-2 bg-gray-100 rounded-lg">
