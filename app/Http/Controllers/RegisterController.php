@@ -41,7 +41,7 @@ class RegisterController extends Controller
             'password' => ['required', Password::min(6), 'confirmed'] //confirmação
         ]);
 
-        $attributes['tipo'] = 'admin'; 
+        $attributes['tipo'] = 'user'; // Defina o tipo padrão como 'user'
         $attributes['password'] = Hash::make($attributes['password']);
 
         User::create($attributes);
