@@ -11,6 +11,7 @@ use App\Http\Controllers\FaqController;
 Route::post('/register', [RegisterController::class, 'storeApi']);
 
 //login
+Route::post('/login', [LoginController::class, 'loginApi']);
 
 
 //para mostrar as rotas~
