@@ -7,7 +7,7 @@ use App\Http\Controllers\FaqController;
 
 
 //registo
-Route::post('/register', [RegisterController::class, 'storeApi']);
+Route::post('/signup', [RegisterController::class, 'storeApi']);
 
 //login
 Route::post('/login', [LoginController::class, 'loginApi']);
@@ -15,7 +15,7 @@ Route::post('/login', [LoginController::class, 'loginApi']);
 
 //para mostrar as rotas~
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/rotas', [RotasController::class, 'indexApi']);
+    Route::get('/rotas', [RotasController::class, 'getRotas']);
     Route::get('/rotas/{id}', [RotasController::class, 'showApi']);
     Route::get('/rotas/zona/{zona}', [RotasController::class, 'getRotasByZona']);
     
