@@ -96,8 +96,6 @@
 
         <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
         <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-        <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
         <script>
             const map = L.map('map').setView([39.5, -8.0], 7);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -219,6 +217,7 @@
 
             function fecharModal() {
                 document.getElementById('modalPonto').style.display = 'none';
+                
             }
 
             function salvarPonto(e) {

@@ -17,8 +17,8 @@ class Ponto extends Model
         return $this->belongsTo(Rota::class);
     }
 
-    public function imagens()
+    public function midias()
     {
-        return $this->hasMany(PontoImagem::class);
+        return $this->hasMany(PontoMidia::class);
     }
 }

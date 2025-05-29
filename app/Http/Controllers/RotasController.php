@@ -76,8 +76,8 @@ class RotasController extends Controller
             'pontos.*.titulo' => 'required|string|max:255',
             'pontos.*.descricao' => 'nullable|string',
             'pontos.*.coordenadas' => 'required|json',
-            'pontos.*.imagens' => 'nullable|array',
-            'pontos.*.imagens.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'pontos.*.midias' => 'nullable|array',
+            'pontos.*.midias.*' => 'file|mimes:jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:10240',
         ]);
 
         $rotaData = collect($validated)->except(['imagem', 'pontos'])->toArray();
@@ -90,22 +90,53 @@ class RotasController extends Controller
 
         // Se houver pontos turísticos incluídos
         if ($request->has('pontos')) {
-            foreach ($request->pontos as $index => $pontoData) {
+            foreach ($request->pontos as $pontoData) {
                 $ponto = $rota->pontos()->create([
                     'titulo' => $pontoData['titulo'],
                     'descricao' => $pontoData['descricao'] ?? '',
                     'coordenadas' => $pontoData['coordenadas'],
                 ]);
 
-                // Verifica se este ponto tem imagens
-                if (isset($pontoData['imagens'])) {
-                    foreach ($pontoData['imagens'] as $imagem) {
-                        $path = $imagem->store('pontos', 'public');
-                        $ponto->imagens()->create(['caminho' => $path]);
+                // Mídias agrupadas
+                $tipos = [
+                    'imagens' => 'imagem',
+                    'videos' => 'video',
+                    'audios' => 'audio',
+                ];
+
+                foreach ($tipos as $campo => $tipo) {
+                    if (isset($pontoData[$campo])) {
+                        foreach ($pontoData[$campo] as $ficheiro) {
+                            $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+                            $ponto->midias()->create([
+                                'tipo' => $tipo,
+                                'caminho' => $path,
+                            ]);
+                        }
+                    }
+                }
+
+                // Mídias genéricas (caso venham num array 'midias' misturado)
+                if (isset($pontoData['midias'])) {
+                    foreach ($pontoData['midias'] as $ficheiro) {
+                        $mime = $ficheiro->getMimeType();
+                        $tipo = 'outro';
+
+                        if (str_starts_with($mime, 'image/')) $tipo = 'imagem';
+                        elseif (str_starts_with($mime, 'video/')) $tipo = 'video';
+                        elseif (str_starts_with($mime, 'audio/')) $tipo = 'audio';
+
+                        $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+                        $ponto->midias()->create([
+                            'caminho' => $path,
+                            'tipo' => $tipo,
+                        ]);
                     }
                 }
             }
         }
+
+
 
         return redirect()->route('rotas.index')->with('success', 'Rota criada com sucesso.');
     }
@@ -117,11 +148,11 @@ class RotasController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function show(string $id)
-     {
-         $rota = Rota::with('pontos')->findOrFail($id); 
-         return view('rota', compact('rota'));
-     }
+    public function show(string $id)
+    {
+        $rota = Rota::with('pontos')->findOrFail($id);
+        return view('rota', compact('rota'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -153,7 +184,9 @@ class RotasController extends Controller
             'zona' => 'required|in:Sul,Centro,Norte',
             'coordenadas' => 'required|json',
             'zona' => 'required|in:Sul,Centro,Norte',
-            'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            '*.imagens.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            '*.videos.*'  => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
+            '*.audios.*'  => 'nullable|mimetypes:audio/mpeg,audio/wav|max:10240'
         ]);
 
         $rotaData = collect($validated)->except(['imagem'])->toArray();
@@ -223,5 +256,4 @@ class RotasController extends Controller
         $rotas = Rota::where('zona', $zona)->with('pontos')->get();
         return response()->json($rotas);
     }
-
 }
