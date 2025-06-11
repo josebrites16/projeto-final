@@ -242,6 +242,21 @@ class RotasController extends Controller
         return response()->json($rotas);
     }
 
+    public function indexApi()
+    {
+        $search = request()->query('search');
+        $query = Rota::query();
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('titulo', 'like', "%{$search}%")
+                    ->orWhere('descricao', 'like', "%{$search}%")
+                    ->orWhere('zona', 'like', "%{$search}%");
+            });
+        }
+        $rotas = $query->with('pontos')->get();
+        return response()->json($rotas);
+    }
+
     public function getRota($id)
     {
         $rota = Rota::with('pontos')->find($id);

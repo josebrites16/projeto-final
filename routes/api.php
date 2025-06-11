@@ -16,6 +16,7 @@ Route::post('/login', [LoginController::class, 'loginApi']);
 //para mostrar as rotas~
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rotas', [RotasController::class, 'getRotas']);
+    Route::get('/rotas/search', [RotasController::class, 'indexApi']);
     Route::get('/rotas/{id}', [RotasController::class, 'showApi']);
     Route::get('/rotas/zona/{zona}', [RotasController::class, 'getRotasByZona']);
     
