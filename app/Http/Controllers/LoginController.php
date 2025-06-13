@@ -21,16 +21,23 @@ class LoginController extends Controller
             'password' => ['required']
         ]);
 
-        if (! Auth::attempt($attributes)) {
+        if (!Auth::attempt($attributes)) {
             throw ValidationException::withMessages([
-                'email' => 'Invalid credentials.'
+                'email' => 'Credenciais inválidas.'
             ]);
         }
 
+        // Verifica se o tipo do utilizador autenticado é "admin"
+        if (Auth::user()->tipo !== 'admin') {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Apenas administradores podem aceder.'
+            ]);
+        }
 
         request()->session()->regenerate();
 
-        return redirect('/rotas')->with('success', 'You are now logged in.');
+        return redirect('/rotas')->with('success', 'Sessão iniciada com sucesso.');
     }
 
     public function destroy()

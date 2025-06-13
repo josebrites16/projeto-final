@@ -10,7 +10,7 @@
 
 <body class="h-full">
   <div class="min-h-full">
-    <nav class="bg-gray-800">
+    <nav class="bg-gray-800 relative">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
@@ -18,7 +18,7 @@
             <!-- Sidebar fixa -->
             <div class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-gray-800 flex-col p-4 space-y-2">
               <div class="mb-4">
-                <img class="size-10"  alt="Logo">
+                <img class="size-10" alt="Logo">
               </div>
               <!-- Sidebar Links -->´
               @auth
@@ -26,12 +26,11 @@
               <x-nav-link href="/admins" :active="request()->is('admins')">Administradores</x-nav-link>
               <x-nav-link href="/rotas" :active="request()->is('rotas')">Rotas</x-nav-link>
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
-              <x-nav-link href="/" :active="request()->is('/')">Estatísticas</x-nav-link>
               <x-nav-link href="/register" :active="request()->is('register')">Criar Administrador</x-nav-link>
               <x-nav-link href="/faqs" :active="request()->is('faqs')">FAQ</x-nav-link>
               @endauth
-              
-              
+
+
             </div>
             @endif
             <div class="hidden md:block">
@@ -44,10 +43,48 @@
                 @endguest
 
                 @auth
-                <form method="POST" action="/logout" class="hidden md:block ml-auto">
-                  @csrf
-                  <x-form-button>Log Out</x-form-button>
-                </form>
+                <div class="flex items-center space-x-4 absolute right-4 top-1/2 -translate-y-1/2 z-10">
+
+
+                  <!-- Profile dropdown -->
+                  <div class="relative inline-block text-left">
+                    <button id="profile-button" type="button" class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow focus:outline-none focus:ring-2 focus:ring-white">
+                      <img class="h-full w-full object-cover" src="https://laracasts.com/images/lary-ai-face.svg" alt="Avatar">
+                    </button>
+
+                    <!-- Dropdown menu -->
+                    <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                      <div class="py-2 px-4 text-sm text-gray-700">
+                        <p><strong>{{ Auth::user()->name }}</strong></p>
+                        <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
+                      </div>
+                      <div class="border-t border-gray-100"></div>
+                      <form method="POST" action="/logout" class="px-4 py-2">
+                        @csrf
+                        <button type="submit" class="w-full text-left text-red-600 hover:text-red-800 text-sm">Logout</button>
+                      </form>
+                    </div>
+                  </div>
+
+                </div>
+
+                <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    const button = document.getElementById('profile-button');
+                    const dropdown = document.getElementById('profile-dropdown');
+
+                    button.addEventListener('click', function(e) {
+                      e.preventDefault();
+                      dropdown.classList.toggle('hidden');
+                    });
+
+                    document.addEventListener('click', function(e) {
+                      if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add('hidden');
+                      }
+                    });
+                  });
+                </script>
                 @endauth
 
               </div>
@@ -63,34 +100,6 @@
                   <!-- Menu open: "block", Menu closed: "hidden" -->
                   <svg class="hidden size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mobile menu, show/hide based on menu state. -->
-          <div class="md:hidden" id="mobile-menu">
-            <div class="space-y-1 px-2 pt-2 pb-3 sm:px-3">
-              <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-              <a href="/" class="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white" aria-current="page">Menu Inicial</a>
-              <a href="/about" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Users</a>
-              <a href="/contact" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Rotas</a>
-            </div>
-            <div class="border-t border-gray-700 pt-4 pb-3">
-              <div class="flex items-center px-5">
-                <div class="shrink-0">
-                  <img class="size-10 rounded-full" src="https://laracasts.com/images/lary-ai-face.svg" alt="">
-                </div>
-                <div class="ml-3">
-                  <div class="text-base/5 font-medium text-white">José Brites</div>
-                  <div class="text-sm font-medium text-gray-400">josesbrites16@gmail.com</div>
-                </div>
-                <button type="button" class="relative ml-auto shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
-                  <span class="absolute -inset-1.5"></span>
-                  <span class="sr-only">View notifications</span>
-                  <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                   </svg>
                 </button>
               </div>

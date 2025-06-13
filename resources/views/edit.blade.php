@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
 
-    <div class="max-w-6xl mx-auto p-4 md:ml-64">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4 max-h-[600px] overflow-y-auto border border-gray-200 p-4 rounded-lg shadow-md bg-white">
-                <div class="bg-white shadow-md rounded-lg p-4 mb-4 border border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-4 max-h-[600px] overflow-y-auto bg-white p-4 rounded-xl border border-gray-200 shadow-md">
+                <div class="bg-white shadow-md rounded-xl p-4 mb-4 border border-gray-200">
                     <h2 class="font-bold text-lg">Editar Rota</h2>
                     <form id="rotaForm" action="{{ route('rotas.update', $rota->id) }}" method="POST" enctype="multipart/form-data">
 

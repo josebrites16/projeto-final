@@ -3,24 +3,25 @@
 use App\Http\Controllers\FaqController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
-use App\Models\Rota;
 use App\Http\Controllers\RotasController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 
 
-
 Route::get('/', function () {
-    return view('home');
+    if (auth()->check()) {
+        return redirect('/rotas');
+    }
+
+    return redirect('/login');
 });
-/*
-Route::get('/users', function () {
-    return view('users', [
-        'users' => User::all()
-    ]);
-});
-*/
+
+
+Route::get('/login', [LoginController::class, 'create'])->name('login');
+Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/admins', [UserController::class, 'admins'])->name('admins.index');
@@ -32,9 +33,6 @@ Route::middleware(['auth'])->group(function () {
         return view('user', ['user' => $user]);
     });
 
-
-
-
     Route::get('/rotas', [RotasController::class, 'index'])->name('rotas.index');
     Route::get('/rotas/create', [RotasController::class, 'create'])->name('rotas.create');
     Route::post('/rotas', [RotasController::class, 'store'])->name('rotas.store');
@@ -44,9 +42,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/rotas/{id}', [RotasController::class, 'destroy'])->name('rotas.destroy');
 
 
-
-
-    //rotas para FAQ
     Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
     Route::get('/faqs/create', [FaqController::class, 'create'])->name('faqs.create');
     Route::post('/faqs', [FaqController::class, 'store'])->name('faqs.store');
@@ -55,14 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/faqs/{id}', [FaqController::class, 'destroy'])->name('faqs.destroy');
 
 
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 
-    Route::get('/register', [RegisterController::class, 'create']);
-    Route::post('/register', [RegisterController::class, 'store']);
-
-
-    Route::post('/logout', [LoginController::class, 'destroy']);
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
-
-Route::post('/login', [LoginController::class, 'store']);
-Route::get('/login', [LoginController::class, 'create']);

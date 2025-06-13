@@ -26,4 +26,3 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-//para mostrar as faqs

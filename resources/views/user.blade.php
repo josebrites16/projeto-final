@@ -18,12 +18,15 @@
                 @method('DELETE')
                 <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Eliminar Utilizador</button>
             </form>
+
+            @if($user->tipo === 'user')
             <form action="{{ route('users.updateType', $user->id) }}" method="POST" class="inline">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="tipo" value="admin">
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tornar Administrador</button>
             </form>
+            @endif
         </div>
     </div>
 
