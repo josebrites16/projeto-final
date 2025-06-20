@@ -1,29 +1,30 @@
 <x-layout>
     <x-slot:heading>
-        <h1 class="text-3xl font-bold text-center mb-6">Login</h1>
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">Bem-vindo</h1>
     </x-slot:heading>
 
-    <div class="max-w-3xl mx-auto p-6 md:ml-64">
-        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Login</h2>
+    <div class="max-w-md mx-auto px-6">
+        <div class="bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-700">Login</h2>
 
-            <form  action="/login" method="POST" class="space-y-5">
+            <form action="/login" method="POST" class="space-y-6">
                 @csrf
+
                 <x-form-field>
-                    <x-form-label for="email">Email:</x-form-label>
-                    <x-form-input type="email" id="email" name="email" :value="old('email')" required />
+                    <x-form-label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email</x-form-label>
+                    <x-form-input type="email" id="email" name="email" :value="old('email')" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                     <x-form-error name="email" />
                 </x-form-field>
 
                 <x-form-field>
-                    <x-form-label for="password">Password:</x-form-label>
-                    <x-form-input type="password" id="password" name="password" required />
+                    <x-form-label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</x-form-label>
+                    <x-form-input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                     <x-form-error name="password" />
                 </x-form-field>
 
-                <div class="flex justify-end space-x-3 pt-4">
-                    <a href="/rotas" class="inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-150">Cancelar</a>
-                    <x-form-button>Login</x-form-button>
+                <div class="flex items-center justify-between pt-4">
+                    <a href="/rotas" class="text-sm text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                    <x-form-button class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition font-medium shadow-md">Entrar</x-form-button>
                 </div>
             </form>
         </div>

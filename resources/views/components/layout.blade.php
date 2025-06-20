@@ -35,13 +35,6 @@
             @endif
             <div class="hidden md:block">
               <div class="ml-4 flex items-center md:ml-6">
-
-                @guest
-                <div class="hidden md:block ml-auto">
-                  <x-nav-link href="/login" :active="request()->is('login')">Login</x-nav-link>
-                </div>
-                @endguest
-
                 @auth
                 <div class="flex items-center space-x-4 absolute right-4 top-1/2 -translate-y-1/2 z-10">
 
@@ -108,7 +101,7 @@
     </nav>
 
     <header class="bg-white shadow-sm w-full">
-      <div class="md:ml-64">
+      <div class="@if (!request()->is('login')) md:ml-64 @endif">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ $heading }}</h1>
         </div>
@@ -116,7 +109,7 @@
     </header>
 
     <main>
-      <div class="md:ml-64">
+      <div class="@if (!request()->is('login')) md:ml-64 @endif">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {{ $slot }}
         </div>
