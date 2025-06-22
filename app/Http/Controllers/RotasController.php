@@ -257,7 +257,7 @@ class RotasController extends Controller
         return response()->json($rotas);
     }
 
-    public function getRota($id)
+    public function getRotaApi($id)
     {
         $rota = Rota::with('pontos')->find($id);
         if (!$rota) {
