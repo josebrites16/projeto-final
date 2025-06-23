@@ -50,6 +50,17 @@
                             <input type="text" id="descricao" name="descricao" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" required>
                         </div>
                         <div>
+                            <label for="descricao_longa" class="block text-gray-700 text-sm font-bold mb-2">
+                                Descrição Longa:
+                            </label>
+                            <textarea
+                                id="descricao_longa"
+                                name="descricao_longa"
+                                rows="6"
+                                class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline resize-y"
+                                placeholder="Escreva aqui uma descrição detalhada da rota..."></textarea>
+                        </div>
+                        <div>
                             <label for="zona" class="block text-gray-700 text-sm font-bold mb-2">Zona:</label>
                             <select name="zona" id="zona" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Todas as zonas</option>

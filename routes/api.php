@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logoutApi']);
     Route::get('/rotas', [RotasController::class, 'getRotas']);
     Route::get('/rotas/search', [RotasController::class, 'indexApi']);
-    Route::get('/rotas/{id}', [RotasController::class, 'showApi']);
+    Route::get('/rotas/{id}', [RotasController::class, 'getRotaApi']);
     Route::get('/rotas/zona/{zona}', [RotasController::class, 'getRotasByZona']);
     
     Route::get('/faqs', [FaqController::class, 'indexApi']);

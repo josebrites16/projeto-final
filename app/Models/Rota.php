@@ -9,6 +9,7 @@ class Rota extends Model
     protected $fillable = [
         'titulo',
         'descricao',
+        'descricaoLonga',
         'distancia',
         'zona',
         'coordenadas',
