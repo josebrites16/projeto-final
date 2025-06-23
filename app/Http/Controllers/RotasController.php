@@ -65,7 +65,6 @@ class RotasController extends Controller
     {
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
-            'descricaoLonga' => 'nullable|string',
             'descricao' => 'required|string',
             'distancia' => 'required|numeric|min:0',
             'coordenadas' => 'required|json',
@@ -182,6 +181,7 @@ class RotasController extends Controller
             'titulo' => 'required|string|max:255',
             'descricao' => 'required|string',
             'distancia' => 'required|numeric|min:0',
+            'descricaoLonga' => 'nullable|string',
             'zona' => 'required|in:Sul,Centro,Norte',
             'coordenadas' => 'required|json',
             'zona' => 'required|in:Sul,Centro,Norte',
@@ -237,7 +237,7 @@ class RotasController extends Controller
 
     //Para a aplicação Android
 
-    public function getRotaApi($id)
+    public function getRotas()
     {
         $rotas = Rota::with('pontos')->get();
         return response()->json($rotas);
