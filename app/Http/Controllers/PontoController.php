@@ -19,7 +19,7 @@ class PontoController extends Controller
             'titulo' => 'required|string|max:255',
             'descricao' => 'nullable|string',
             'coordenadas' => 'required|json',
-            'imagens.*' => 'image|mimes:jpg,png,jpeg|max:2048'
+            'imagens.*' => 'image|mimes:jpg,png,jpeg|max:102400'
         ]);
 
         $ponto = $rota->pontos()->create([
@@ -108,4 +108,14 @@ class PontoController extends Controller
 
         return response()->json($ponto);
     }
+
+
+
+    //api
+    public function getPontosByRotaId($rota_id)
+    {
+        $pontos = Rota::findOrFail($rota_id)->pontos()->with('midias')->get();
+        return response()->json($pontos);
+    }
 }
+

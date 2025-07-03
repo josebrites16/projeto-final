@@ -6,6 +6,7 @@ use App\Models\Rota;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class RotasController extends Controller
 {
@@ -66,18 +67,17 @@ class RotasController extends Controller
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'descricao' => 'required|string',
+            'descricao_longa' => 'nullable|string',
             'distancia' => 'required|numeric|min:0',
             'coordenadas' => 'required|json',
             'zona' => 'required|in:Sul,Centro,Norte',
-            'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
 
-            // Validação dos pontos
             'pontos' => 'nullable|array',
             'pontos.*.titulo' => 'required|string|max:255',
             'pontos.*.descricao' => 'nullable|string',
             'pontos.*.coordenadas' => 'required|json',
-            'pontos.*.midias' => 'nullable|array',
-            'pontos.*.midias.*' => 'file|mimes:jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:10240',
+            'pontos.*.midias.*' => 'file|mimes:jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:102400',
         ]);
 
         $rotaData = collect($validated)->except(['imagem', 'pontos'])->toArray();
@@ -88,58 +88,36 @@ class RotasController extends Controller
 
         $rota = Rota::create($rotaData);
 
-        // Se houver pontos turísticos incluídos
-        if ($request->has('pontos')) {
-            foreach ($request->pontos as $pontoData) {
-                $ponto = $rota->pontos()->create([
-                    'titulo' => $pontoData['titulo'],
-                    'descricao' => $pontoData['descricao'] ?? '',
-                    'coordenadas' => $pontoData['coordenadas'],
-                ]);
+        foreach ($request->input('pontos', []) as $index => $pontoData) {
+            $ponto = $rota->pontos()->create([
+                'titulo' => $pontoData['titulo'],
+                'descricao' => $pontoData['descricao'] ?? '',
+                'coordenadas' => $pontoData['coordenadas'],
+            ]);
 
-                // Mídias agrupadas
-                $tipos = [
-                    'imagens' => 'imagem',
-                    'videos' => 'video',
-                    'audios' => 'audio',
-                ];
+            if ($request->hasFile("pontos.{$index}.midias")) {
+                foreach ($request->file("pontos.{$index}.midias") as $ficheiro) {
+                    if (!$ficheiro->isValid()) continue;
 
-                foreach ($tipos as $campo => $tipo) {
-                    if (isset($pontoData[$campo])) {
-                        foreach ($pontoData[$campo] as $ficheiro) {
-                            $path = $ficheiro->store("pontos/{$tipo}s", 'public');
-                            $ponto->midias()->create([
-                                'tipo' => $tipo,
-                                'caminho' => $path,
-                            ]);
-                        }
-                    }
-                }
+                    $mime = $ficheiro->getMimeType();
+                    $tipo = str_starts_with($mime, 'image/') ? 'imagem'
+                        : (str_starts_with($mime, 'video/') ? 'video'
+                        : (str_starts_with($mime, 'audio/') ? 'audio' : 'outro'));
 
-                // Mídias genéricas (caso venham num array 'midias' misturado)
-                if (isset($pontoData['midias'])) {
-                    foreach ($pontoData['midias'] as $ficheiro) {
-                        $mime = $ficheiro->getMimeType();
-                        $tipo = 'outro';
+                    $path = $ficheiro->store("pontos/{$tipo}s", 'public');
 
-                        if (str_starts_with($mime, 'image/')) $tipo = 'imagem';
-                        elseif (str_starts_with($mime, 'video/')) $tipo = 'video';
-                        elseif (str_starts_with($mime, 'audio/')) $tipo = 'audio';
-
-                        $path = $ficheiro->store("pontos/{$tipo}s", 'public');
-                        $ponto->midias()->create([
-                            'caminho' => $path,
-                            'tipo' => $tipo,
-                        ]);
-                    }
+                    $ponto->midias()->create([
+                        'tipo' => $tipo,
+                        'caminho' => $path,
+                    ]);
                 }
             }
         }
 
-
-
         return redirect()->route('rotas.index')->with('success', 'Rota criada com sucesso.');
     }
+
+
 
     /**
      * Display the specified resource.

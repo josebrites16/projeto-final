@@ -30,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rotas/{id}', [RotasController::class, 'getRotaApi']);
     Route::get('/rotas/zona/{zona}', [RotasController::class, 'getRotasByZona']);
 
+    Route::get('/rotas/{rota_id}/pontos', [PontoController::class, 'getPontosByRotaId']);
+
     Route::get('/faqs', [FaqController::class, 'indexApi']);
     Route::get('/faqs/{id}', [FaqController::class, 'showApi']);
 

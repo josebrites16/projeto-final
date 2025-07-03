@@ -212,6 +212,8 @@
             document.getElementById('modal-imagens-preview').classList.add('hidden');
             document.getElementById('modal-imagens-list').innerHTML = '';
             document.getElementById('modal-imagens').classList.remove('hidden');
+            document.getElementById('modal-imagens').disabled = false;
+            document.getElementById('modal-imagens').value = '';
         }
 
         function abrirModalVisualizacao(index) {
@@ -343,8 +345,10 @@
                 formData.append(`pontos[${index}][descricao]`, ponto.descricao);
                 formData.append(`pontos[${index}][coordenadas]`, JSON.stringify(ponto.coordenadas));
 
-                for (let i = 0; i < ponto.imagens.length; i++) {
-                    formData.append(`pontos[${index}][imagens][]`, ponto.imagens[i]);
+                if (Array.isArray(ponto.imagens)) {
+                    ponto.imagens.forEach(img => {
+                        formData.append(`pontos[${index}][midias][]`, img);
+                    });
                 }
             });
 
@@ -369,5 +373,4 @@
             });
         });
     </script>
-
 </x-layout>
