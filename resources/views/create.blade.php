@@ -43,14 +43,14 @@
                         @csrf
                         <div>
                             <label for="titulo" class="block text-gray-700 text-sm font-bold mb-2">Título:</label>
-                            <input type="text" id="titulo" name="titulo" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" required>
+                            <input type="text" id="titulo" name="titulo" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" >
                         </div>
                         <div>
                             <label for="descricao" class="block text-gray-700 text-sm font-bold mb-2">Descrição:</label>
-                            <input type="text" id="descricao" name="descricao" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" required>
+                            <input type="text" id="descricao" name="descricao" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" >
                         </div>
                         <div>
-                            <label for="descricao_longa" class="block text-gray-700 text-sm font-bold mb-2">
+                            <label for="descricao_longa" class="block text-gray-700 text-sm font-bold mb-2" >
                                 Descrição Longa:
                             </label>
                             <textarea
@@ -108,6 +108,14 @@
                 </div>
             </div>
 
+            <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md text-center">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Aviso</h2>
+                    <p id="alertMessage" class="text-gray-600 mb-6"></p>
+                    <button onclick="hideAlertModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">OK</button>
+                </div>
+            </div>
+
             <!-- Mapa -->
             <div class="sticky top-4 bg-white p-4 rounded-xl border border-gray-200 shadow-md h-[600px]">
                 <div id="map" class="h-full rounded-lg border border-gray-300"></div>
@@ -127,6 +135,7 @@
             minZoom: 2,
             maxZoom: 18
         }).setView([39.5, -8.0], 6);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
@@ -202,7 +211,6 @@
             modal.dataset.lng = latlng.lng;
             modal.dataset.index = markerIndex;
 
-            // Limpar inputs e ativar campos
             document.getElementById('modal-titulo').value = '';
             document.getElementById('modal-descricao').value = '';
             document.getElementById('modal-imagens').value = '';
@@ -255,18 +263,55 @@
             document.getElementById('btn-salvar-ponto').style.display = 'none';
         }
 
-
         function fecharModal() {
             document.getElementById('modalPonto').style.display = 'none';
+        }
 
+        function showAlertModal(message) {
+            document.getElementById('alertMessage').textContent = message;
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function salvarPonto(e) {
             e.preventDefault();
 
-            const titulo = document.getElementById('modal-titulo').value;
-            const descricao = document.getElementById('modal-descricao').value;
+            const titulo = document.getElementById('modal-titulo').value.trim();
+            const descricao = document.getElementById('modal-descricao').value.trim();
             const imagens = document.getElementById('modal-imagens').files;
+
+            if (!titulo || !descricao) {
+                showAlertModal("Preencha o título e a descrição do ponto turístico.");
+                return;
+            }
+
+            if (imagens.length === 0) {
+                showAlertModal("Adicione pelo menos uma imagem ao ponto turístico.");
+                return;
+            }
+
+            let numVideos = 0;
+            let numAudios = 0;
+            for (let i = 0; i < imagens.length; i++) {
+                if (imagens[i].type.startsWith("video")) numVideos++;
+                if (imagens[i].type.startsWith("audio")) numAudios++;
+            }
+
+            if (numVideos > 1) {
+                showAlertModal("Cada ponto turístico só pode ter no máximo 1 vídeo.");
+                return;
+            }
+            if (numAudios > 1) {
+                showAlertModal("Cada ponto turístico só pode ter no máximo 1 áudio.");
+                return;
+            }
 
             const lat = parseFloat(document.getElementById('modalPonto').dataset.lat);
             const lng = parseFloat(document.getElementById('modalPonto').dataset.lng);
@@ -288,7 +333,6 @@
                 color: 'blue',
                 fillColor: 'blue'
             });
-
             fecharModal();
             salvarNaSessao();
         }
@@ -317,9 +361,7 @@
             }
 
             if (e.layerType === 'polyline') {
-                if (polylineLayer) {
-                    drawnItems.removeLayer(polylineLayer);
-                }
+                if (polylineLayer) drawnItems.removeLayer(polylineLayer);
                 polylineLayer = layer;
                 drawnItems.addLayer(polylineLayer);
 
@@ -335,8 +377,39 @@
             const form = e.target;
             const formData = new FormData(form);
 
-            if (!document.getElementById('coordenadas').value) {
-                alert("Por favor, desenhe a rota no mapa antes de salvar.");
+            const titulo = document.getElementById('titulo').value.trim();
+            const descricao = document.getElementById('descricao').value.trim();
+            const zona = document.getElementById('zona').value.trim();
+            const descricaoLonga = document.getElementById('descricao_longa').value.trim();
+            const imagem = document.getElementById('imagem').files[0];
+            const coordenadas = document.getElementById('coordenadas').value;
+
+            if (!titulo) {
+                showAlertModal("Preencha o título e a descrição do ponto turístico.");
+                return;
+            }
+            if (!descricao || !descricaoLonga) {
+                showAlertModal("Preencha a descrição e a descrição longa da rota.");
+                return;
+            }
+
+            if (!zona) {
+                showAlertModal("Selecione uma zona para a rota.");
+                return;
+            }
+
+            if (!imagem) {
+                showAlertModal("Adicione uma imagem à rota.");
+                return;
+            }
+
+            if (!coordenadas) {
+                showAlertModal("Desenhe a rota no mapa antes de salvar.");
+                return;
+            }
+
+            if (pontosTuristicos.length === 0) {
+                showAlertModal("Adicione pelo menos um ponto turístico à rota.");
                 return;
             }
 
@@ -365,7 +438,6 @@
             });
         });
 
-
         window.addEventListener('load', () => {
             pontosTuristicos.forEach((ponto, index) => {
                 const latlng = L.latLng(ponto.coordenadas.lat, ponto.coordenadas.lng);
@@ -373,4 +445,6 @@
             });
         });
     </script>
+
+
 </x-layout>
