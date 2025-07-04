@@ -77,7 +77,7 @@ class RotasController extends Controller
             'pontos.*.titulo' => 'required|string|max:255',
             'pontos.*.descricao' => 'nullable|string',
             'pontos.*.coordenadas' => 'required|json',
-            'pontos.*.midias.*' => 'file|mimes:jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:102400',
+            'pontos.*.midias.*' => 'file|mimes:mov,jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:102400',
         ]);
 
         $rotaData = collect($validated)->except(['imagem', 'pontos'])->toArray();

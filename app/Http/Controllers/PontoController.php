@@ -112,10 +112,29 @@ class PontoController extends Controller
 
 
     //api
-    public function getPontosByRotaId($rota_id)
+    public function getPontosByRotaId($rotaId)
     {
-        $pontos = Rota::findOrFail($rota_id)->pontos()->with('midias')->get();
-        return response()->json($pontos);
+        $pontos = Ponto::with('midias')->where('rota_id', $rotaId)->get();
+
+        $pontosTransformados = $pontos->map(function ($ponto) {
+            return [
+                'id' => $ponto->id,
+                'titulo' => $ponto->titulo,
+                'descricao' => $ponto->descricao,
+                'coordenadas' => $ponto->coordenadas,
+                'rotaId' => $ponto->rota_id,
+                'midias' => $ponto->midias->map(function ($midia) {
+                    return [
+                        'id' => $midia->id,
+                        'tipo' => $midia->tipo,
+                        'caminho' => secure_asset('storage/' . $midia->caminho)
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json($pontosTransformados);
     }
+
 }
 
