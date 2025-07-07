@@ -25,7 +25,9 @@ Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/admins', [UserController::class, 'admins'])->name('admins.index');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::middleware(['auth'])->group(function () {
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
     Route::put('/users/{id}', [UserController::class, 'updateType'])->name('users.updateType');
 
     Route::get('/users/{id}', function ($id) {

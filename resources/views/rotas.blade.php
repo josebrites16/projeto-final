@@ -13,14 +13,14 @@
                 <div class="flex flex-col md:flex-row items-center gap-4">
                     <div class="relative w-full">
                         <input type="text" name="search" value="{{ $search ?? '' }}"
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="w-full pl-10 pr-4 py-2 border border-brown rounded-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-brown"
                             placeholder="Pesquisar rotas...">
                         <div class="absolute left-3 top-2.5 text-gray-400">
                             <i class="fas fa-search"></i>
                         </div>
                     </div>
                     <button type="button" id="toggleFilters"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition">
+                        class="bg-brown hover:bg-brown-dark  text-white font-medium px-5 py-2 rounded-lg transition">
                         <i class="fas fa-filter mr-2"></i>Filtros
                     </button>
                 </div>
@@ -32,7 +32,7 @@
                             <label for="zona" class="block text-gray-700 font-semibold mb-1">Zona:</label>
                             <div class="flex">
                                 <select name="zona" id="zona"
-                                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full border border-brown rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brown   ">
                                     <option value="">Todas as zonas</option>
                                     @foreach($zonas ?? [] as $zonaOption)
                                         <option value="{{ $zonaOption }}" {{ ($zona ?? '') == $zonaOption ? 'selected' : '' }}>
@@ -41,7 +41,7 @@
                                     @endforeach
                                 </select>
                                 <button type="submit"
-                                    class="ml-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                                    class="ml-2 bg-brown hover:bg-brown-dark text-white font-medium py-2 px-4 rounded-lg transition">
                                     Aplicar
                                 </button>
                             </div>
@@ -58,7 +58,7 @@
                 <div class="flex flex-col md:flex-row border border-gray-200 p-4 rounded-xl shadow-sm bg-white">
                     <div class="md:w-1/2 pr-4">
                         <div class="flex justify-between items-start">
-                            <a href="/rotas/{{ $rota['id'] }}" class="text-blue-600 hover:underline text-lg font-semibold">
+                            <a href="/rotas/{{ $rota['id'] }}" class="text-brown hover:underline text-lg font-semibold">
                                 {{ $rota['titulo'] }}
                             </a>
                             <button onclick="showModal({{ $rota['id'] }})">

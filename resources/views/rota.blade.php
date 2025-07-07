@@ -38,12 +38,12 @@
 
         <!-- Botões de ação -->
         <div class="flex justify-center gap-4 mt-4">
-            <a href="/rotas/{{ $rota['id'] }}/edit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <a href="/rotas/{{ $rota['id'] }}/edit" class="bg-brown text-white px-4 py-2 rounded hover:bg-brown-dark">
                 Editar Rota
             </a>
 
             <button onclick="showModal({{ $rota['id'] }})"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-600">
                 Eliminar Rota
             </button>
 

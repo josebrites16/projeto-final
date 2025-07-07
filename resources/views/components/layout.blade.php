@@ -5,27 +5,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My website</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite('resources/css/app.css')
 </head>
 
 <body class="h-full">
   <div class="min-h-full">
-    <nav class="bg-gray-800 relative">
+    <nav class="bg-brown relative">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
             @if (!request()->is('login'))
             <!-- Sidebar fixa -->
-            <div class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-gray-800 flex-col p-4 space-y-2">
+            <div class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-brown flex-col p-4 space-y-2">
               <div class="mb-4">
-                <img class="size-10" alt="Logo">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="size-12">
               </div>
-              <!-- Sidebar Links -->´
+              <!-- Sidebar Links -->
               @auth
-              <x-nav-link href="/users" :active="request()->is('users')">Users</x-nav-link>
-              <x-nav-link href="/admins" :active="request()->is('admins')">Administradores</x-nav-link>
               <x-nav-link href="/rotas" :active="request()->is('rotas')">Rotas</x-nav-link>
               <x-nav-link href="/rotas/create" :active="request()->is('rotas/create')">Criar Rota</x-nav-link>
+              <x-nav-link href="/users" :active="request()->is('users')">Utilizadores</x-nav-link>
+              <x-nav-link href="/admins" :active="request()->is('admins')">Administradores</x-nav-link>
               <x-nav-link href="/register" :active="request()->is('register')">Criar Administrador</x-nav-link>
               <x-nav-link href="/faqs" :active="request()->is('faqs')">FAQ</x-nav-link>
               @endauth
@@ -42,9 +42,10 @@
                   <!-- Profile dropdown -->
                   <div class="relative inline-block text-left">
                     <button id="profile-button" type="button" class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow focus:outline-none focus:ring-2 focus:ring-white">
-                      <img class="h-full w-full object-cover" src="https://laracasts.com/images/lary-ai-face.svg" alt="Avatar">
+                      <img class="h-full w-full object-cover rounded-full"
+                        src="{{ Auth::user()->profile_photo_url ?? 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                        alt="Avatar">
                     </button>
-
                     <!-- Dropdown menu -->
                     <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                       <div class="py-2 px-4 text-sm text-gray-700">

@@ -24,7 +24,7 @@
 
                 <div class="flex items-center justify-between pt-4">
                     <a href="/rotas" class="text-sm text-gray-500 hover:text-gray-700 transition">Cancelar</a>
-                    <x-form-button class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition font-medium shadow-md">Entrar</x-form-button>
+                    <x-form-button class="bg-brown x-5 py-2 rounded-lg transition font-medium shadow-md">Entrar</x-form-button>
                 </div>
             </form>
         </div>

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -33,7 +33,7 @@ class UserController extends Controller
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             })
-            ->get();
+            ->paginate(6);
 
         return view('admins', compact('users'));
     }
@@ -60,9 +60,21 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+
+        if (Auth::check() && Auth::id() === $user->id) {
+            return redirect()->back()->with('error', 'Não pode eliminar a si próprio.');
+        }
+
+        $tipo = $user->tipo; // guardar antes de eliminar
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+
+        if ($tipo === 'admin') {
+           return redirect()->route('admins.index')->with('success', 'Administrador eliminado com sucesso.');
+        } else {
+            return redirect()->route('users.index')->with('success', 'Utilizador eliminado com sucesso.');
+        }
     }
+
 
     //para a aplicação android
 
@@ -171,5 +183,4 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Palavra-passe atualizada com sucesso.'], 200);
     }
-
 }

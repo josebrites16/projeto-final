@@ -33,7 +33,7 @@
                             </div>
                             <div class="flex justify-end gap-2 mt-4">
                                 <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                                <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-blue-500 text-white px-4 py-2 rounded">
+                                <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-brown text-white px-4 py-2 rounded">
                                     Salvar
                                 </button>
                             </div>
@@ -62,7 +62,7 @@
                         </div>
                         <div>
                             <label for="zona" class="block text-gray-700 text-sm font-bold mb-2">Zona:</label>
-                            <select name="zona" id="zona" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select name="zona" id="zona" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brown">
                                 <option value="">Todas as zonas</option>
                                 @foreach($zonas ?? [] as $zonaOption)
                                 <option value="{{ $zonaOption }}" {{ ($zona ?? '') == $zonaOption ? 'selected' : '' }}>
@@ -87,7 +87,7 @@
                         <input type="hidden" name="coordenadas" id="coordenadas">
 
                         <div class="flex gap-4">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
+                            <x-form-button>Criar</x-form-button>
                             <a href="/rotas" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Voltar à Lista</a>
                         </div>
                     </form>
@@ -112,7 +112,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md text-center">
                     <h2 class="text-lg font-bold text-gray-800 mb-4">Aviso</h2>
                     <p id="alertMessage" class="text-gray-600 mb-6"></p>
-                    <button onclick="hideAlertModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">OK</button>
+                    <button onclick="hideAlertModal()" class="bg-brown hover:bg-brown-dark text-white px-4 py-2 rounded-lg">OK</button>
                 </div>
             </div>
 
