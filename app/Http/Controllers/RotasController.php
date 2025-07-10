@@ -82,6 +82,9 @@ class RotasController extends Controller
 
         $rotaData = collect($validated)->except(['imagem', 'pontos'])->toArray();
 
+        $rotaData['descricaoLonga'] = $validated['descricao_longa'] ?? null;
+        unset($rotaData['descricao_longa']);
+
         if ($request->hasFile('imagem')) {
             $rotaData['imagem'] = $request->file('imagem')->store('rotas', 'public');
         }
@@ -102,7 +105,7 @@ class RotasController extends Controller
                     $mime = $ficheiro->getMimeType();
                     $tipo = str_starts_with($mime, 'image/') ? 'imagem'
                         : (str_starts_with($mime, 'video/') ? 'video'
-                        : (str_starts_with($mime, 'audio/') ? 'audio' : 'outro'));
+                            : (str_starts_with($mime, 'audio/') ? 'audio' : 'outro'));
 
                     $path = $ficheiro->store("pontos/{$tipo}s", 'public');
 
@@ -159,7 +162,7 @@ class RotasController extends Controller
             'titulo' => 'required|string|max:255',
             'descricao' => 'required|string',
             'distancia' => 'required|numeric|min:0',
-            'descricaoLonga' => 'nullable|string',
+            'descricao_longa' => 'nullable|string',
             'zona' => 'required|in:Sul,Centro,Norte',
             'coordenadas' => 'required|json',
             'zona' => 'required|in:Sul,Centro,Norte',
@@ -173,8 +176,13 @@ class RotasController extends Controller
         $rota = Rota::findOrFail($id);
 
 
-        $dadosAtualizados = collect($validated)->except(['imagem'])->toArray();
-
+        $dadosAtualizados = collect($validated)
+            ->except(['imagem']) // exclui imagem do array de dados
+            ->mapWithKeys(function ($value, $key) {
+                // converte descricao_longa -> descricaoLonga
+                return [$key === 'descricao_longa' ? 'descricaoLonga' : $key => $value];
+            })
+            ->toArray();
         // Substitui a imagem antiga, se uma nova for enviada
         if ($request->hasFile('imagem')) {
             // Apaga a imagem antiga

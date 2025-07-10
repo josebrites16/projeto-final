@@ -24,6 +24,10 @@
                             <textarea name="descricao" id="descricao" rows="4" class="border border-gray-300 rounded-lg p-2 w-full">{{ $rota->descricao }}</textarea>
                         </div>
                         <div class="mb-4">
+                            <label for="descricao_longa" class="block text-gray-700">Descrição Longa:</label>
+                            <textarea name="descricao_longa" id="descricao_longa" rows="6" class="border border-gray-300 rounded-lg p-2 w-full">{{ $rota->descricaoLonga }}</textarea>
+                        </div>
+                        <div class="mb-4">
                             <label for="zona" class="block text-gray-700">Zona:</label>
                             <select name="zona" id="zona" class="border border-gray-300 rounded-lg p-2 w-full">
                                 <option value="">Selecione uma zona</option>
