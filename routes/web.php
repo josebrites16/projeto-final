@@ -7,6 +7,7 @@ use App\Http\Controllers\RotasController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PontoController;
 
 
 Route::get('/', function () {
@@ -42,6 +43,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rotas/{id}/edit', [RotasController::class, 'edit'])->name('rotas.edit');
     Route::put('/rotas/{id}', [RotasController::class, 'update'])->name('rotas.update');
     Route::delete('/rotas/{id}', [RotasController::class, 'destroy'])->name('rotas.destroy');
+
+    Route::put('/pontos/{ponto}', [PontoController::class, 'update'])->name('pontos.update');
+    Route::get('/rotas/{rota}/pontos/{ponto}/edit', [PontoController::class, 'edit'])->name('pontos.edit');
+    Route::delete('/pontos/{ponto}', [PontoController::class, 'destroy'])->name('pontos.destroy');
 
 
     Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');

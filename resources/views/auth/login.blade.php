@@ -12,13 +12,13 @@
 
                 <x-form-field>
                     <x-form-label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email</x-form-label>
-                    <x-form-input type="email" id="email" name="email" :value="old('email')" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    <x-form-input type="email" id="email" name="email" :value="old('email')" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-brown focus:outline-none" />
                     <x-form-error name="email" />
                 </x-form-field>
 
                 <x-form-field>
                     <x-form-label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</x-form-label>
-                    <x-form-input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    <x-form-input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-brown focus:outline-none" />
                     <x-form-error name="password" />
                 </x-form-field>
 

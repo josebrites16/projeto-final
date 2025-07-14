@@ -35,7 +35,7 @@
                     <form id="deleteForm-{{ $faq->id }}" action="{{ route('faqs.destroy', $faq->id) }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="button" onclick="showDeleteModal {{ $faq->id }})" class="text-red-600 hover:text-red-800">
+                        <button type="button" onclick="showDeleteModal({{ $faq->id }})" class="text-red-600 hover:text-red-800">
                             <i class="fas fa-trash"></i>
                         </button>
 

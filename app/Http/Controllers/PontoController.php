@@ -19,7 +19,9 @@ class PontoController extends Controller
             'titulo' => 'required|string|max:255',
             'descricao' => 'nullable|string',
             'coordenadas' => 'required|json',
-            'imagens.*' => 'image|mimes:jpg,png,jpeg|max:102400'
+            'imagens.*' => 'image|mimes:jpg,png,jpeg|max:102400',
+            'videos.*' => 'mimetypes:video/mp4,video/quicktime|max:204800',
+            'audios.*' => 'mimetypes:audio/mpeg,audio/wav|max:102400'
         ]);
 
         $ponto = $rota->pontos()->create([
@@ -95,13 +97,86 @@ class PontoController extends Controller
         ], 201);
     }
 
+    public function edit(Rota $rota, Ponto $ponto)
+    {
+        return view('pontos.edit', compact('rota', 'ponto'));
+    }
+
+    public function destroy(Ponto $ponto)
+    {
+        $ponto->midias()->delete();
+        $ponto->delete();
+
+        return back()->with('success', 'Ponto eliminado com sucesso!');
+    }
+
+    public function update(Request $request, Ponto $ponto)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'descricao' => 'nullable|string',
+            'coordenadas' => 'required|json',
+            'imagens.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'videos.*' => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
+            'audios.*' => 'nullable|mimetypes:audio/mpeg,audio/wav|max:10240',
+        ]);
+
+        $ponto->update([
+            'titulo' => $request->titulo,
+            'descricao' => $request->descricao,
+            'coordenadas' => $request->coordenadas,
+        ]);
+
+        // Remover mídias selecionadas
+        if ($request->filled('remover_midias')) {
+            foreach ($request->remover_midias as $midiaId) {
+                $midia = $ponto->midias()->find($midiaId);
+                if ($midia) {
+                    \Storage::disk('public')->delete($midia->caminho);
+                    $midia->delete();
+                }
+            }
+        }
+
+        // Processar novas mídias
+        $tipos = [
+            'imagens' => 'imagem',
+            'videos' => 'video',
+            'audios' => 'audio',
+        ];
+
+        foreach ($tipos as $campo => $tipo) {
+            if ($request->hasFile($campo)) {
+                foreach ($request->file($campo) as $ficheiro) {
+                    if (!$ficheiro->isValid()) continue;
+
+                    $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+
+                    $ponto->midias()->create([
+                        'tipo' => $tipo,
+                        'caminho' => $path,
+                    ]);
+                }
+            }
+        }
+
+        // Verifica se ainda tem pelo menos uma imagem
+        $temImagem = $ponto->midias()->where('tipo', 'imagem')->exists();
+        if (!$temImagem) {
+            return back()->withErrors(['imagens' => 'O ponto precisa ter pelo menos uma imagem.']);
+        }
+
+        return redirect()->route('rotas.show', $ponto->rota_id)->with('success', 'Ponto atualizado com sucesso!');
+    }
+
+
     /**
      * Retorna um ponto específico via API (para Android)
      */
     public function showApi($id)
     {
         $ponto = Ponto::with('midias')->find($id);
-        
+
         if (!$ponto) {
             return response()->json(['message' => 'Ponto não encontrado'], 404);
         }
@@ -135,6 +210,4 @@ class PontoController extends Controller
 
         return response()->json($pontosTransformados);
     }
-
 }
-

@@ -24,18 +24,22 @@
                                 <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
                             </div>
                             <div class="mb-2">
-                                <label>Imagens:</label>
+                                <label>Midia:</label>
                                 <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
                             </div>
                             <div id="modal-imagens-preview" class="mt-2 text-sm text-gray-700 hidden">
-                                <label>Imagens já adicionadas:</label>
+                                <label>Midia já adicionadas:</label>
                                 <ul class="list-disc list-inside mt-1" id="modal-imagens-list"></ul>
                             </div>
                             <div class="flex justify-end gap-2 mt-4">
                                 <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
                                 <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-brown text-white px-4 py-2 rounded">
-                                    Salvar
+                                    Guardar
                                 </button>
+                                <button id="btn-eliminar-ponto" onclick="eliminarPonto()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                                    Eliminar Ponto
+                                </button>
+
                             </div>
                         </div>
                     </div>
@@ -43,14 +47,14 @@
                         @csrf
                         <div>
                             <label for="titulo" class="block text-gray-700 text-sm font-bold mb-2">Título:</label>
-                            <input type="text" id="titulo" name="titulo" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" >
+                            <input type="text" id="titulo" name="titulo" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline">
                         </div>
                         <div>
                             <label for="descricao" class="block text-gray-700 text-sm font-bold mb-2">Descrição:</label>
-                            <input type="text" id="descricao" name="descricao" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" >
+                            <input type="text" id="descricao" name="descricao" class="shadow border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline">
                         </div>
                         <div>
-                            <label for="descricao_longa" class="block text-gray-700 text-sm font-bold mb-2" >
+                            <label for="descricao_longa" class="block text-gray-700 text-sm font-bold mb-2">
                                 Descrição Longa:
                             </label>
                             <textarea
@@ -73,7 +77,7 @@
                         </div>
                         <div>
                             <label for="imagem" class="block text-gray-700 text-sm font-bold mb-2">Imagem:</label>
-                            <input type="file" class="border border-gray-300 rounded-lg p-2 w-full" id="imagem" name="imagem">
+                            <input type="file" id="imagem" name="imagem" accept="image/*" class="mb-2">
                             @error('imagem')
                             <div class="text-red-500 mt-2">{{ $message }}</div>
                             @enderror
@@ -94,15 +98,15 @@
                     <div class="mt-4 p-4 bg-gray-100 rounded-xl">
                         <h3 class="font-medium mb-2">Instruções de Criação:</h3>
                         <ul class="list-disc pl-5 text-sm text-gray-700">
-                            <li>Use as ferramentas de desenho no canto superior direito do mapa.</li>
+                            <li>Use as ferramentas de desenho no canto superior esquerdo do mapa.</li>
                             <li>A distância total será calculada automaticamente.</li>
-                            <li>Após desenhar a rota, clique em "Salvar Rota" para armazenar as informações.</li>
+                            <li>Após desenhar a rota, clique em "Criar" para armazenar as informações.</li>
                             <li>Para adicionar pontos turísticos, clique no mapa onde deseja adicionar um ponto.</li>
                             <li>Preencha os detalhes do ponto turístico no modal que aparece.</li>
                             <li>Os pontos turísticos preenchidos serão marcados em azul.</li>
-                            <li>Você pode apagar e redesenhar a rota utilizando o botão "Deletar camadas".</li>
+                            <li>Pode apagar e redesenhar a rota utilizando o botão "Delete layers".</li>
                             <li>Certifique-se de que a rota está desenhada corretamente antes de salvar.</li>
-                            <li>Você pode editar ou excluir a rota posteriormente.</li>
+                            <li>Pode editar ou excluir a rota posteriormente.</li>
                         </ul>
                     </div>
                 </div>
@@ -136,6 +140,19 @@
             maxZoom: 18
         }).setView([39.5, -8.0], 6);
 
+
+        ['modalPonto', 'alertModal'].forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.querySelectorAll('input, textarea, select, button').forEach(el => {
+                    L.DomEvent.disableClickPropagation(el);
+                    L.DomEvent.disableScrollPropagation(el);
+                });
+            }
+        });
+
+
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
@@ -146,11 +163,17 @@
         let polylineLayer = null;
         let pontosTuristicos = [];
         try {
-            pontosTuristicos = JSON.parse(localStorage.getItem('pontosTuristicos')) || [];
+            const dadosSalvos = JSON.parse(localStorage.getItem('pontosTuristicos')) || [];
+            pontosTuristicos = dadosSalvos.map(p => ({
+                ...p,
+                imagens: []
+            }));
         } catch (e) {
-            console.warn("Erro ao acessar localStorage:", e);
+            console.warn("JSON inválido no localStorage. Limpando...");
+            localStorage.removeItem('pontosTuristicos');
             pontosTuristicos = [];
         }
+
         const markerRefs = [];
 
         const drawControl = new L.Control.Draw({
@@ -175,11 +198,18 @@
 
         function salvarNaSessao() {
             try {
-                localStorage.setItem('pontosTuristicos', JSON.stringify(pontosTuristicos));
+                const dadosParaSalvar = pontosTuristicos.map(p => ({
+                    titulo: p.titulo,
+                    descricao: p.descricao,
+                    coordenadas: p.coordenadas
+
+                }));
+                localStorage.setItem('pontosTuristicos', JSON.stringify(dadosParaSalvar));
             } catch (e) {
                 console.warn("Erro ao salvar no localStorage:", e);
             }
         }
+
 
         function adicionarMarker(latlng, preenchido = false, pontoIndex = null) {
             const cor = preenchido ? 'blue' : 'gray';
@@ -222,6 +252,8 @@
             document.getElementById('modal-imagens').classList.remove('hidden');
             document.getElementById('modal-imagens').disabled = false;
             document.getElementById('modal-imagens').value = '';
+            document.getElementById('btn-eliminar-ponto').classList.remove('hidden');
+
         }
 
         function abrirModalVisualizacao(index) {
@@ -239,10 +271,11 @@
             const imagensPreview = document.getElementById('modal-imagens-preview');
             const imagensList = document.getElementById('modal-imagens-list');
 
-            tituloInput.value = ponto.titulo;
+
+            tituloInput.value = ponto.titulo || '';
             tituloInput.disabled = true;
 
-            descricaoInput.value = ponto.descricao;
+            descricaoInput.value = ponto.descricao || '';
             descricaoInput.disabled = true;
 
             imagensInput.disabled = true;
@@ -253,7 +286,14 @@
 
             if (ponto.imagens && ponto.imagens.length > 0) {
                 ponto.imagens.forEach(img => {
-                    const nome = typeof img === 'string' ? img : img.name;
+                    let nome = '';
+
+                    if (typeof img === 'string') {
+                        nome = img;
+                    } else if (img.name) {
+                        nome = img.name;
+                    }
+
                     imagensList.innerHTML += `<li>${nome}</li>`;
                 });
             } else {
@@ -261,10 +301,15 @@
             }
 
             document.getElementById('btn-salvar-ponto').style.display = 'none';
+            document.getElementById('btn-salvar-ponto').style.display = 'none';
+            document.getElementById('btn-eliminar-ponto').classList.remove('hidden');
         }
+
 
         function fecharModal() {
             document.getElementById('modalPonto').style.display = 'none';
+            document.getElementById('btn-eliminar-ponto').classList.add('hidden');
+
         }
 
         function showAlertModal(message) {
@@ -285,31 +330,41 @@
 
             const titulo = document.getElementById('modal-titulo').value.trim();
             const descricao = document.getElementById('modal-descricao').value.trim();
-            const imagens = document.getElementById('modal-imagens').files;
+            const midias = document.getElementById('modal-imagens').files;
 
             if (!titulo || !descricao) {
                 showAlertModal("Preencha o título e a descrição do ponto turístico.");
                 return;
             }
 
-            if (imagens.length === 0) {
-                showAlertModal("Adicione pelo menos uma imagem ao ponto turístico.");
+            if (midias.length === 0) {
+                showAlertModal("Adicione pelo menos uma mídia (imagem, vídeo ou áudio).");
                 return;
             }
 
-            let numVideos = 0;
-            let numAudios = 0;
-            for (let i = 0; i < imagens.length; i++) {
-                if (imagens[i].type.startsWith("video")) numVideos++;
-                if (imagens[i].type.startsWith("audio")) numAudios++;
+            let imagens = [],
+                videos = [],
+                audios = [];
+
+            for (let i = 0; i < midias.length; i++) {
+                const file = midias[i];
+                if (file.type.startsWith("image")) imagens.push(file);
+                else if (file.type.startsWith("video")) videos.push(file);
+                else if (file.type.startsWith("audio")) audios.push(file);
             }
 
-            if (numVideos > 1) {
-                showAlertModal("Cada ponto turístico só pode ter no máximo 1 vídeo.");
+            if (imagens.length < 1) {
+                showAlertModal("Adicione pelo menos uma imagem.");
                 return;
             }
-            if (numAudios > 1) {
-                showAlertModal("Cada ponto turístico só pode ter no máximo 1 áudio.");
+
+            if (videos.length !== 1) {
+                showAlertModal("Adicione exatamente um vídeo.");
+                return;
+            }
+
+            if (audios.length !== 1) {
+                showAlertModal("Adicione exatamente um áudio.");
                 return;
             }
 
@@ -320,7 +375,7 @@
             const ponto = {
                 titulo,
                 descricao,
-                imagens: Array.from(imagens),
+                imagens: Array.from(midias),
                 coordenadas: {
                     lat,
                     lng
@@ -329,13 +384,14 @@
 
             pontosTuristicos[index] = ponto;
 
-            markerRefs[index].setStyle({
-                color: 'blue',
-                fillColor: 'blue'
-            });
+            drawnItems.removeLayer(markerRefs[index]);
+
+            const latlng = L.latLng(lat, lng);
+            adicionarMarker(latlng, true, index);
             fecharModal();
             salvarNaSessao();
         }
+
 
         function calculateDistance(latlngs) {
             let totalDistance = 0;
@@ -358,18 +414,62 @@
             if (e.layerType === 'marker') {
                 const latlng = layer.getLatLng();
                 adicionarMarker(latlng, false, null);
+                return;
             }
 
             if (e.layerType === 'polyline') {
-                if (polylineLayer) drawnItems.removeLayer(polylineLayer);
-                polylineLayer = layer;
-                drawnItems.addLayer(polylineLayer);
+                const novosPontos = layer.getLatLngs();
 
-                const latlngs = layer.getLatLngs();
+                if (polylineLayer) {
+                    // Obter os pontos anteriores
+                    const antigosPontos = polylineLayer.getLatLngs();
+                    const combinados = antigosPontos.concat(novosPontos);
+
+                    // Substituir a polyline anterior pela nova combinada
+                    drawnItems.removeLayer(polylineLayer);
+                    polylineLayer = L.polyline(combinados, {
+                        color: 'blue',
+                        weight: 5
+                    });
+                    drawnItems.addLayer(polylineLayer);
+
+                    document.getElementById('distancia').value = calculateDistance(combinados);
+                    document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(combinados));
+                } else {
+                    polylineLayer = layer;
+                    drawnItems.addLayer(polylineLayer);
+
+                    document.getElementById('distancia').value = calculateDistance(novosPontos);
+                    document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(novosPontos));
+                }
+            }
+        });
+
+        map.on('draw:deleted', function(e) {
+            polylineLayer = null;
+            document.getElementById('distancia').value = '';
+            document.getElementById('coordenadas').value = '';
+        });
+
+        map.on('draw:edited', function(e) {
+            let novaLinha = null;
+
+            e.layers.eachLayer(function(layer) {
+                if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                    novaLinha = layer;
+                }
+            });
+
+            if (novaLinha) {
+                polylineLayer = novaLinha;
+                const latlngs = novaLinha.getLatLngs();
+
                 document.getElementById('distancia').value = calculateDistance(latlngs);
                 document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
             }
         });
+
+
 
         document.getElementById('rotaForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -444,7 +544,43 @@
                 adicionarMarker(latlng, true, index);
             });
         });
-    </script>
 
+        function eliminarPonto() {
+            const index = parseInt(document.getElementById('modalPonto').dataset.index);
+
+            if (isNaN(index) || index < 0 || index >= markerRefs.length) {
+                showAlertModal("Erro ao eliminar ponto.");
+                return;
+            }
+
+            // Remover do mapa
+            if (markerRefs[index]) {
+                drawnItems.removeLayer(markerRefs[index]);
+            }
+
+
+            markerRefs.splice(index, 1);
+
+
+            if (pontosTuristicos[index]) {
+                pontosTuristicos.splice(index, 1);
+            }
+
+            salvarNaSessao();
+            fecharModal();
+
+
+            markerRefs.forEach((marker, i) => {
+                marker.off();
+                marker.on('click', () => {
+                    if (pontosTuristicos[i]) {
+                        abrirModalVisualizacao(i);
+                    } else {
+                        abrirModalEdicao(marker.getLatLng(), i);
+                    }
+                });
+            });
+        }
+    </script>
 
 </x-layout>

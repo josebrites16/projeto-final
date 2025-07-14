@@ -3,7 +3,7 @@
         <h1 class="text-3xl font-extrabold text-center mb-6 text-black tracking-wide">Criar Administrador</h1>
     </x-slot:heading>
 
-    <div class="max-w-3xl mx-auto p-6 md:ml-64">
+    <div class="min-h-screen flex items-center justify-center px-4 py-6">
         @if ($errors->has('email'))
         <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md text-center">
@@ -16,7 +16,7 @@
         </div>
         @endif
 
-        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200 w-full max-w-2xl">
             <h2 class="text-2xl font-semibold mb-6 text-gray-800">Novo Administrador</h2>
 
             <form action="/register" method="POST" class="space-y-5">

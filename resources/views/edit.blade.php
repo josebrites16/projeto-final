@@ -11,6 +11,32 @@
             <div class="space-y-4 max-h-[600px] overflow-y-auto bg-white p-4 rounded-xl border border-gray-200 shadow-md">
                 <div class="bg-white shadow-md rounded-xl p-4 mb-4 border border-gray-200">
                     <h2 class="font-bold text-lg">Editar Rota</h2>
+                    <div id="modalPonto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                            <h2 class="text-xl font-bold mb-4">Adicionar Ponto Turístico</h2>
+                            <input type="hidden" id="modal-index">
+                            <div class="mb-2">
+                                <label>Título:</label>
+                                <input type="text" id="modal-titulo" class="w-full border rounded p-2" />
+                            </div>
+                            <div class="mb-2">
+                                <label>Descrição:</label>
+                                <textarea id="modal-descricao" class="w-full border rounded p-2"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <input type="file" id="modal-imagens" multiple class="w-full border p-2" />
+                            </div>
+                            <div id="modal-imagens-preview" class="mt-2 text-sm text-gray-700 hidden">
+                                <ul class="list-disc list-inside mt-1" id="modal-imagens-list"></ul>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button onclick="fecharModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                                <button id="btn-salvar-ponto" type="button" onclick="salvarPonto(event)" class="bg-brown text-white px-4 py-2 rounded">Guardar</button>
+                                <button id="btn-eliminar-ponto" onclick="eliminarPonto()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Eliminar Ponto</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <form id="rotaForm" action="{{ route('rotas.update', $rota->id) }}" method="POST" enctype="multipart/form-data">
 
                         @csrf
@@ -57,7 +83,7 @@
                         </div>
                         <input type="hidden" name="coordenadas" id="coordenadas" value="">
                         <div class="flex space-x-2">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar Alterações</button>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Guardar Alterações</button>
                             <a href="{{ route('rotas.show', $rota->id) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
                         </div>
                     </form>
@@ -82,176 +108,355 @@
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-
-
-
     <script>
-        // Inicializa o mapa
-        const map = L.map('map').setView([39.5, -8.0], 7);
+        const map = L.map('map', {
+            maxBounds: [
+                [85, -180],
+                [-85, 180]
+            ],
+            maxBoundsViscosity: 1.0,
+            minZoom: 2,
+            maxZoom: 18
+        }).setView([39.5, -8.0], 6);
 
-        // Adiciona a camada de mapa base
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Inicializa a camada de desenho
         const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        // Configura os controles de desenho
+        let polylineLayer = null;
+        let pontosTuristicos = [];
+
+
+
+        const markerRefs = [];
+
         const drawControl = new L.Control.Draw({
             edit: {
-                featureGroup: drawnItems,
-                poly: {
-                    allowIntersection: false
-                }
+                featureGroup: drawnItems
             },
             draw: {
                 polygon: false,
                 rectangle: false,
                 circle: false,
+                marker: true,
                 circlemarker: false,
-                marker: false,
                 polyline: {
                     shapeOptions: {
                         color: 'blue',
-                        weight: 5,
-                        opacity: 0.7
+                        weight: 5
                     }
                 }
             }
         });
         map.addControl(drawControl);
 
-        // Carrega as coordenadas existentes da rota
-        const coordenadas = @json(json_decode($rota['coordenadas']));
+        function salvarNaSessao() {
+            try {
+                const dadosParaSalvar = pontosTuristicos.map(p => ({
+                    titulo: p.titulo,
+                    descricao: p.descricao,
+                    coordenadas: p.coordenadas
+                }));
+                localStorage.setItem('pontosTuristicos', JSON.stringify(dadosParaSalvar));
+            } catch (e) {}
+        }
 
-        let currentPolyline = null;
-
-        // Exibe a rota existente se houver coordenadas
-        if (coordenadas && coordenadas.length > 0) {
-            const latlngs = coordenadas.map(coord => [coord.lat, coord.lng]);
-
-            // Ajusta o mapa para mostrar toda a rota
-            const bounds = L.latLngBounds(latlngs);
-            map.fitBounds(bounds);
-
-            // Adiciona a polyline ao mapa
-            currentPolyline = L.polyline(latlngs, {
-                color: 'blue',
-                weight: 5,
-                opacity: 0.7
+        function adicionarMarker(latlng, preenchido = false, pontoIndex = null) {
+            const cor = preenchido ? 'blue' : 'gray';
+            const marker = L.circleMarker(latlng, {
+                color: cor,
+                fillColor: cor,
+                fillOpacity: 1,
+                radius: 8
             }).addTo(drawnItems);
 
-            // Adiciona marcadores de início e fim
-            L.marker(latlngs[0]).addTo(drawnItems).bindPopup("Início da Rota");
-            L.marker(latlngs[latlngs.length - 1]).addTo(drawnItems).bindPopup("Fim da Rota");
+            const index = markerRefs.length;
+            markerRefs.push(marker);
+
+            marker.on('click', () => {
+                if (preenchido && pontoIndex !== null) {
+                    abrirModalVisualizacao(pontoIndex);
+                } else {
+                    abrirModalEdicao(latlng, index);
+                }
+            });
+
+            return index;
         }
 
-        // Função para calcular a distância em quilômetros entre dois pontos
-        function calcDistance(latlng1, latlng2) {
-            return map.distance(latlng1, latlng2) / 1000; // Converte de metros para km
+        function abrirModalEdicao(latlng, markerIndex) {
+            const modal = document.getElementById('modalPonto');
+            modal.style.display = 'flex';
+            modal.dataset.lat = latlng.lat;
+            modal.dataset.lng = latlng.lng;
+            modal.dataset.index = markerIndex;
+
+            document.getElementById('modal-titulo').value = '';
+            document.getElementById('modal-descricao').value = '';
+            document.getElementById('modal-imagens').value = '';
+            document.getElementById('modal-titulo').disabled = false;
+            document.getElementById('modal-descricao').disabled = false;
+            document.getElementById('btn-salvar-ponto').style.display = 'inline-block';
+            document.getElementById('modal-imagens-preview').classList.add('hidden');
+            document.getElementById('modal-imagens-list').innerHTML = '';
+            document.getElementById('modal-imagens').classList.remove('hidden');
+            document.getElementById('modal-imagens').disabled = false;
+            document.getElementById('modal-imagens').value = '';
+            document.getElementById('btn-eliminar-ponto').classList.remove('hidden');
         }
 
-        // Função para calcular a distância total da rota
-        function calculateTotalDistance(latlngs) {
-            let totalDistance = 0;
+        function abrirModalVisualizacao(index) {
+            const ponto = pontosTuristicos[index];
+            const modal = document.getElementById('modalPonto');
+            modal.style.display = 'flex';
 
-            for (let i = 0; i < latlngs.length - 1; i++) {
-                totalDistance += calcDistance(latlngs[i], latlngs[i + 1]);
+            modal.dataset.lat = ponto.coordenadas.lat;
+            modal.dataset.lng = ponto.coordenadas.lng;
+            modal.dataset.index = index;
+
+            document.getElementById('modal-titulo').value = ponto.titulo || '';
+            document.getElementById('modal-descricao').value = ponto.descricao || '';
+
+            // Desativa inputs
+            document.getElementById('modal-titulo').disabled = true;
+            document.getElementById('modal-descricao').disabled = true;
+            document.getElementById('modal-imagens').disabled = true;
+
+            // Oculta a secção de imagens
+            document.getElementById('modal-imagens').classList.add('hidden');
+            document.getElementById('modal-imagens-preview').classList.add('hidden');
+
+            // Mostra botões relevantes
+            document.getElementById('btn-salvar-ponto').style.display = 'none';
+            document.getElementById('btn-eliminar-ponto').classList.remove('hidden');
+        }
+
+
+        function fecharModal() {
+            document.getElementById('modalPonto').style.display = 'none';
+            document.getElementById('btn-eliminar-ponto').classList.add('hidden');
+        }
+
+        function salvarPonto(e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById('modal-titulo').value.trim();
+            const descricao = document.getElementById('modal-descricao').value.trim();
+            const midias = document.getElementById('modal-imagens').files;
+
+            if (!titulo || !descricao) {
+                alert("Preencha o título e a descrição do ponto turístico.");
+                return;
             }
 
-            return totalDistance.toFixed(2); // Arredonda para 2 casas decimais
+            if (midias.length === 0) {
+                alert("Adicione pelo menos uma mídia (imagem, vídeo ou áudio).");
+                return;
+            }
+
+            let imagens = [],
+                videos = [],
+                audios = [];
+
+            for (let i = 0; i < midias.length; i++) {
+                const file = midias[i];
+                if (file.type.startsWith("image")) imagens.push(file);
+                else if (file.type.startsWith("video")) videos.push(file);
+                else if (file.type.startsWith("audio")) audios.push(file);
+            }
+
+            if (imagens.length < 1) {
+                alert("Adicione pelo menos uma imagem.");
+                return;
+            }
+
+            if (videos.length !== 1) {
+                alert("Adicione exatamente um vídeo.");
+                return;
+            }
+
+            if (audios.length !== 1) {
+                alert("Adicione exatamente um áudio.");
+                return;
+            }
+
+            const lat = parseFloat(document.getElementById('modalPonto').dataset.lat);
+            const lng = parseFloat(document.getElementById('modalPonto').dataset.lng);
+            const index = parseInt(document.getElementById('modalPonto').dataset.index);
+
+            const ponto = {
+                titulo,
+                descricao,
+                imagens: Array.from(midias),
+                coordenadas: {
+                    lat,
+                    lng
+                }
+            };
+
+            pontosTuristicos[index] = ponto;
+
+            drawnItems.removeLayer(markerRefs[index]);
+            adicionarMarker(L.latLng(lat, lng), true, index);
+
+            fecharModal();
+            salvarNaSessao();
         }
 
-        // Função para serializar as coordenadas para o formato esperado pela API
+
+        function eliminarPonto() {
+            const index = parseInt(document.getElementById('modalPonto').dataset.index);
+            if (markerRefs[index]) drawnItems.removeLayer(markerRefs[index]);
+            markerRefs.splice(index, 1);
+            pontosTuristicos.splice(index, 1);
+            salvarNaSessao();
+            fecharModal();
+        }
+
+        function calculateDistance(latlngs) {
+            let total = 0;
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                total += map.distance(latlngs[i], latlngs[i + 1]) / 1000;
+            }
+            return total.toFixed(2);
+        }
+
         function serializeCoordinates(latlngs) {
-            return latlngs.map(latlng => {
-                return {
-                    lat: latlng.lat,
-                    lng: latlng.lng
-                };
-            });
+            return latlngs.map(latlng => ({
+                lat: latlng.lat,
+                lng: latlng.lng
+            }));
         }
 
-        // Evento quando uma camada é criada (nova rota desenhada)
         map.on('draw:created', function(e) {
-            // Remove a polyline existente
-            drawnItems.clearLayers();
-
-            // Adiciona a nova camada
             const layer = e.layer;
-            drawnItems.addLayer(layer);
-            currentPolyline = layer;
 
-            // Obtém as coordenadas
-            const latlngs = layer.getLatLngs();
+            if (e.layerType === 'marker') {
+                const latlng = layer.getLatLng();
+                adicionarMarker(latlng, false, null);
+                return;
+            }
 
-            // Calcula e atualiza a distância
-            const distance = calculateTotalDistance(latlngs);
-            document.getElementById('distancia').value = distance;
+            if (e.layerType === 'polyline') {
+                const latlngs = layer.getLatLngs();
+                if (polylineLayer) drawnItems.removeLayer(polylineLayer);
+                polylineLayer = layer;
+                drawnItems.addLayer(polylineLayer);
 
-            // Atualiza o campo oculto de coordenadas
-            const serializedCoords = serializeCoordinates(latlngs);
-            document.getElementById('coordenadas').value = JSON.stringify(serializedCoords);
-
-            // Adiciona marcadores de início e fim
-            L.marker(latlngs[0]).addTo(drawnItems).bindPopup("Início da Rota");
-            L.marker(latlngs[latlngs.length - 1]).addTo(drawnItems).bindPopup("Fim da Rota");
+                document.getElementById('distancia').value = calculateDistance(latlngs);
+                document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
+            }
         });
 
-        // Evento quando uma camada é editada
-        map.on('draw:edited', function(e) {
-            const layers = e.layers;
+        map.on('draw:deleted', () => {
+            polylineLayer = null;
+            document.getElementById('distancia').value = '';
+            document.getElementById('coordenadas').value = '';
+        });
 
-            layers.eachLayer(function(layer) {
+        map.on('draw:edited', function(e) {
+            e.layers.eachLayer(layer => {
                 if (layer instanceof L.Polyline) {
                     const latlngs = layer.getLatLngs();
-
-                    // Calcula e atualiza a distância
-                    const distance = calculateTotalDistance(latlngs);
-                    document.getElementById('distancia').value = distance;
-
-                    // Atualiza o campo oculto de coordenadas
-                    const serializedCoords = serializeCoordinates(latlngs);
-                    document.getElementById('coordenadas').value = JSON.stringify(serializedCoords);
-
-                    // Atualiza os marcadores de início e fim
-                    drawnItems.eachLayer(function(marker) {
-                        if (marker instanceof L.Marker) {
-                            drawnItems.removeLayer(marker);
-                        }
-                    });
-
-                    L.marker(latlngs[0]).addTo(drawnItems).bindPopup("Início da Rota");
-                    L.marker(latlngs[latlngs.length - 1]).addTo(drawnItems).bindPopup("Fim da Rota");
+                    document.getElementById('distancia').value = calculateDistance(latlngs);
+                    document.getElementById('coordenadas').value = JSON.stringify(serializeCoordinates(latlngs));
                 }
             });
         });
 
-        // Evento quando uma camada é excluída
-        map.on('draw:deleted', function(e) {
-            // Limpa o valor da distância e coordenadas
-            document.getElementById('distancia').value = "0";
-            document.getElementById('coordenadas').value = "[]";
-        });
+        window.addEventListener('load', () => {
+            const pontosBD = @json($rota -> pontos);
+            pontosTuristicos.length = 0;
+            markerRefs.length = 0;
+            drawnItems.clearLayers();
 
-        // Atualiza o campo de coordenadas com os valores iniciais
-        if (coordenadas && coordenadas.length > 0) {
-            const latlngs = coordenadas.map(coord => L.latLng(coord.lat, coord.lng));
-            const distance = calculateTotalDistance(latlngs);
-            document.getElementById('distancia').value = distance;
-            document.getElementById('coordenadas').value = JSON.stringify(coordenadas);
-        }
+            pontosBD.forEach((ponto) => {
+                const coords = typeof ponto.coordenadas === "string" ?
+                    JSON.parse(ponto.coordenadas) :
+                    ponto.coordenadas;
 
-        // Submete o formulário quando ele for enviado
-        document.getElementById('rotaForm').addEventListener('submit', function(e) {
-            // Se não houver coordenadas, impede o envio
-            if (!document.getElementById('coordenadas').value || document.getElementById('coordenadas').value === "[]") {
-                e.preventDefault();
-                alert("Por favor, desenhe uma rota no mapa antes de salvar.");
+                const pontoObj = {
+                    id: ponto.id, // <- ID do ponto existente
+                    titulo: ponto.titulo,
+                    descricao: ponto.descricao,
+                    coordenadas: coords,
+                    imagens: ponto.midias?.map(m => m.caminho) || [],
+                    existente: true // <- Marca que vem do BD
+                };
+
+                const index = pontosTuristicos.length;
+                pontosTuristicos.push(pontoObj);
+                adicionarMarker(L.latLng(coords.lat, coords.lng), true, index);
+            });
+
+
+            const coordenadas = @json(json_decode($rota -> coordenadas));
+            if (coordenadas.length > 0) {
+                const latlngs = coordenadas.map(coord => L.latLng(coord.lat, coord.lng));
+                const linha = L.polyline(latlngs, {
+                    color: 'blue',
+                    weight: 5
+                }).addTo(drawnItems);
+                polylineLayer = linha;
+                document.getElementById('distancia').value = calculateDistance(latlngs);
+                document.getElementById('coordenadas').value = JSON.stringify(coordenadas);
+                map.fitBounds(linha.getBounds());
             }
         });
-    </script>
 
+        document.getElementById('rotaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            const titulo = document.getElementById('titulo').value.trim();
+            const descricao = document.getElementById('descricao').value.trim();
+            const descricaoLonga = document.getElementById('descricao_longa').value.trim();
+            const zona = document.getElementById('zona').value.trim();
+            const imagem = document.getElementById('imagem').files[0];
+            const coordenadas = document.getElementById('coordenadas').value;
+
+            if (!titulo || !descricao || !descricaoLonga || !zona || !coordenadas || pontosTuristicos.length === 0) {
+                alert("Preencha todos os campos obrigatórios e adicione pelo menos um ponto turístico.");
+                return;
+            }
+
+            if (imagem) formData.append('imagem', imagem);
+
+            pontosTuristicos.forEach((ponto, index) => {
+                formData.append(`pontos[${index}][titulo]`, ponto.titulo);
+                formData.append(`pontos[${index}][descricao]`, ponto.descricao);
+                formData.append(`pontos[${index}][coordenadas]`, JSON.stringify(ponto.coordenadas));
+
+                if (ponto.id) {
+                    formData.append(`pontos[${index}][id]`, ponto.id);
+                }
+
+                // Só envia mídias se forem novas (não strings)
+                if (!ponto.existente || ponto.imagens.some(i => typeof i !== 'string')) {
+                    ponto.imagens.forEach(img => {
+                        if (typeof img !== 'string') {
+                            formData.append(`pontos[${index}][midias][]`, img);
+                        }
+                    });
+                }
+            });
+
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            }).then(res => {
+                if (res.redirected) {
+                    localStorage.removeItem('pontosTuristicos');
+                    window.location.href = res.url;
+                } else {
+                    alert("Erro ao salvar rota.");
+                }
+            });
+        });
+    </script>
 </x-layout>

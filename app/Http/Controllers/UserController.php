@@ -28,10 +28,12 @@ class UserController extends Controller
     {
         $search = $request->input('search');
         $users = User::where('tipo', 'admin')
-            ->when($search, function ($query) use ($search) {
-                return $query->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
             })
             ->paginate(6);
 
@@ -69,7 +71,7 @@ class UserController extends Controller
         $user->delete();
 
         if ($tipo === 'admin') {
-           return redirect()->route('admins.index')->with('success', 'Administrador eliminado com sucesso.');
+            return redirect()->route('admins.index')->with('success', 'Administrador eliminado com sucesso.');
         } else {
             return redirect()->route('users.index')->with('success', 'Utilizador eliminado com sucesso.');
         }

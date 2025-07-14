@@ -157,49 +157,87 @@ class RotasController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, string $id)
-    {
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'required|string',
-            'distancia' => 'required|numeric|min:0',
-            'descricao_longa' => 'nullable|string',
-            'zona' => 'required|in:Sul,Centro,Norte',
-            'coordenadas' => 'required|json',
-            'zona' => 'required|in:Sul,Centro,Norte',
-            '*.imagens.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            '*.videos.*'  => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
-            '*.audios.*'  => 'nullable|mimetypes:audio/mpeg,audio/wav|max:10240'
-        ]);
+{
+    $validated = $request->validate([
+        'titulo' => 'required|string|max:255',
+        'descricao' => 'required|string',
+        'descricao_longa' => 'nullable|string',
+        'distancia' => 'required|numeric|min:0',
+        'zona' => 'required|in:Sul,Centro,Norte',
+        'coordenadas' => 'required|json',
+        'imagem' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
+        'pontos' => 'nullable|array',
+        'pontos.*.titulo' => 'required|string|max:255',
+        'pontos.*.descricao' => 'nullable|string',
+        'pontos.*.coordenadas' => 'required|json',
+        'pontos.*.midias.*' => 'file|mimes:mov,jpg,jpeg,png,mp4,mp3,wav,ogg,webm|max:102400',
+    ]);
 
-        $rotaData = collect($validated)->except(['imagem'])->toArray();
+    $rota = Rota::findOrFail($id);
 
-        $rota = Rota::findOrFail($id);
+    $dadosAtualizados = collect($validated)
+        ->except(['imagem', 'pontos'])
+        ->mapWithKeys(fn($v, $k) => [$k === 'descricao_longa' ? 'descricaoLonga' : $k => $v])
+        ->toArray();
 
+    if ($request->hasFile('imagem')) {
+        if ($rota->imagem && Storage::disk('public')->exists($rota->imagem)) {
+            Storage::disk('public')->delete($rota->imagem);
+        }
+        $dadosAtualizados['imagem'] = $request->file('imagem')->store('rotas', 'public');
+    }
 
-        $dadosAtualizados = collect($validated)
-            ->except(['imagem']) // exclui imagem do array de dados
-            ->mapWithKeys(function ($value, $key) {
-                // converte descricao_longa -> descricaoLonga
-                return [$key === 'descricao_longa' ? 'descricaoLonga' : $key => $value];
-            })
-            ->toArray();
-        // Substitui a imagem antiga, se uma nova for enviada
-        if ($request->hasFile('imagem')) {
-            // Apaga a imagem antiga
-            if ($rota->imagem && Storage::disk('public')->exists($rota->imagem)) {
-                Storage::disk('public')->delete($rota->imagem);
+    $rota->update($dadosAtualizados);
+
+    $idsRecebidos = [];
+
+    foreach ($request->input('pontos', []) as $index => $pontoData) {
+        if (isset($pontoData['id'])) {
+            $ponto = $rota->pontos()->find($pontoData['id']);
+            if ($ponto) {
+                $ponto->update([
+                    'titulo' => $pontoData['titulo'],
+                    'descricao' => $pontoData['descricao'] ?? '',
+                    'coordenadas' => $pontoData['coordenadas'],
+                ]);
+                $idsRecebidos[] = $ponto->id;
             }
-
-            // Guarda a nova imagem
-            $novaImagem = $request->file('imagem')->store('rotas', 'public');
-            $dadosAtualizados['imagem'] = $novaImagem;
+        } else {
+            $ponto = $rota->pontos()->create([
+                'titulo' => $pontoData['titulo'],
+                'descricao' => $pontoData['descricao'] ?? '',
+                'coordenadas' => $pontoData['coordenadas'],
+            ]);
+            $idsRecebidos[] = $ponto->id;
         }
 
-        $rota->update($dadosAtualizados);
+        if ($request->hasFile("pontos.{$index}.midias")) {
+            foreach ($request->file("pontos.{$index}.midias") as $ficheiro) {
+                if (!$ficheiro->isValid()) continue;
 
-        return redirect()->route('rotas.show', $rota->id)
-            ->with('success', 'Rota atualizada com sucesso.');
+                $mime = $ficheiro->getMimeType();
+                $tipo = str_starts_with($mime, 'image/') ? 'imagem'
+                    : (str_starts_with($mime, 'video/') ? 'video'
+                        : (str_starts_with($mime, 'audio/') ? 'audio' : 'outro'));
+
+                $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+
+                $ponto->midias()->create([
+                    'tipo' => $tipo,
+                    'caminho' => $path,
+                ]);
+            }
+        }
     }
+
+    // Elimina os pontos que não foram enviados na atualização (foram removidos no frontend)
+    $rota->pontos()->whereNotIn('id', $idsRecebidos)->delete();
+
+    return redirect()->route('rotas.show', $rota->id)
+        ->with('success', 'Rota atualizada com sucesso.');
+}
+
+
 
     /**
      * Remove the specified resource from storage.
