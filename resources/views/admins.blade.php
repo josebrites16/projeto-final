@@ -3,7 +3,6 @@
         <h1 class="text-3xl font-extrabold text-center mb-6 text-black tracking-wide">Lista de Administradores</h1>
     </x-slot:heading>
 
-    <!-- Fonte para envelope-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 
     <div class="max-w-4xl mx-auto px-4 py-6">

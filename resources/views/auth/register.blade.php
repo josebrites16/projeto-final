@@ -16,7 +16,7 @@
         </div>
         @endif
 
-        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200 w-full max-w-2xl">
+        <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200 w-full max-w-2xl"> 
             <h2 class="text-2xl font-semibold mb-6 text-gray-800">Novo Administrador</h2>
 
             <form action="/register" method="POST" class="space-y-5">

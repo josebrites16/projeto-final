@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-    <!-- Caixa principal -->
     <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-lg p-6">
 
         <form method="POST" action="{{ route('pontos.update', ['ponto' => $ponto->id]) }}" enctype="multipart/form-data">
@@ -15,16 +14,13 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Formulário com scroll -->
+                <!-- Formulário -->
                 <div class="overflow-y-auto max-h-[600px] pr-2">
-                    <!-- Título -->
                     <div class="mb-4">
                         <label class="block font-semibold text-sm text-gray-700 mb-1">Título</label>
                         <input type="text" name="titulo" value="{{ old('titulo', $ponto->titulo) }}" required
                             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-brown">
                     </div>
-
-                    <!-- Descrição -->
                     <div class="mb-4">
                         <label class="block font-semibold text-sm text-gray-700 mb-1">Descrição</label>
                         <textarea name="descricao" rows="4"
@@ -32,8 +28,6 @@
                     </div>
 
                     <input type="hidden" name="coordenadas" id="coordenadas" value="{{ old('coordenadas', $ponto->coordenadas) }}">
-
-                    <!-- Mídias Existentes -->
                     @if ($ponto->midias->count())
                     <div class="mb-6">
                         <h3 class="font-semibold text-gray-700 mb-2">Mídias Existentes</h3>
@@ -57,11 +51,11 @@
                             </div>
                             @endforeach
                         </div>
-                        <p class="text-sm text-gray-500 mt-1">Marque as mídias que deseja remover.</p>
+                        <p class="text-sm text-gray-500 mt-1">Maque os elementos que deseja remover.</p>
+                        <p class="text-sm text-gray-500">O ponto deve manter: pelo menos uma imagem, e exatamente um vídeo e um áudio.</p>
+
                     </div>
                     @endif
-
-                    <!-- Upload novas mídias -->
                     <div class="mb-6">
                         <h3 class="font-semibold text-gray-700 mb-2">Adicionar Novas Mídias</h3>
                         <label class="block text-sm font-medium text-gray-700">Imagens</label>
@@ -72,8 +66,6 @@
                         <input type="file" name="audios[]" multiple accept="audio/*" class="mb-2">
                     </div>
                 </div>
-
-                <!-- Mapa + Instruções -->
                 <div class="flex flex-col justify-between">
                     <!-- Mapa -->
                     <div class="mb-4">
@@ -93,10 +85,18 @@
                 </div>
             </div>
 
+            <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md text-center">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Aviso</h2>
+                    <ul id="alertMessage" class="text-gray-600 mb-6 text-left list-disc list-inside space-y-1"></ul>
+                    <button onclick="hideAlertModal()" class="bg-brown hover:bg-brown-dark text-white px-4 py-2 rounded-lg">OK</button>
+                </div>
+            </div>
+
             <!-- Botões -->
             <div class="flex justify-center gap-4 mt-8">
                 <button type="submit" class="bg-brown text-white px-6 py-2 rounded hover:bg-brown-dark">
-                    Salvar Alterações
+                    Guardar Alterações
                 </button>
                 <a href="{{ route('rotas.show', $rota->id) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
             </div>
@@ -114,9 +114,11 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        const marker = L.marker([coords.lat, coords.lng], { draggable: true }).addTo(map);
+        const marker = L.marker([coords.lat, coords.lng], {
+            draggable: true
+        }).addTo(map);
 
-        marker.on('dragend', function (e) {
+        marker.on('dragend', function(e) {
             const pos = marker.getLatLng();
             document.getElementById('coordenadas').value = JSON.stringify({
                 lat: pos.lat,

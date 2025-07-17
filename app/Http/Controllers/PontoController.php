@@ -72,7 +72,6 @@ class PontoController extends Controller
             'coordenadas' => $validated['coordenadas'],
         ]);
 
-        // Processa mídias agrupadas
         $tipos = [
             'imagens' => 'imagem',
             'videos' => 'video',
@@ -111,63 +110,89 @@ class PontoController extends Controller
     }
 
     public function update(Request $request, Ponto $ponto)
-    {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'nullable|string',
-            'coordenadas' => 'required|json',
-            'imagens.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'videos.*' => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
-            'audios.*' => 'nullable|mimetypes:audio/mpeg,audio/wav|max:10240',
-        ]);
+{
+    $request->validate([
+        'titulo' => 'required|string|max:255',
+        'descricao' => 'nullable|string',
+        'coordenadas' => 'required|json',
+        'imagens.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+        'videos.*' => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
+        'audios.*' => 'nullable|mimetypes:audio/mpeg,audio/wav|max:10240',
+    ]);
 
-        $ponto->update([
-            'titulo' => $request->titulo,
-            'descricao' => $request->descricao,
-            'coordenadas' => $request->coordenadas,
-        ]);
+    $ponto->update([
+        'titulo' => $request->titulo,
+        'descricao' => $request->descricao,
+        'coordenadas' => $request->coordenadas,
+    ]);
 
-        // Remover mídias selecionadas
-        if ($request->filled('remover_midias')) {
-            foreach ($request->remover_midias as $midiaId) {
-                $midia = $ponto->midias()->find($midiaId);
-                if ($midia) {
-                    \Storage::disk('public')->delete($midia->caminho);
-                    $midia->delete();
-                }
-            }
-        }
+    // Contar mídias existentes antes da remoção
+    $midiasExistentes = $ponto->midias->groupBy('tipo');
+    $remover = $request->input('remover_midias', []);
 
-        // Processar novas mídias
-        $tipos = [
-            'imagens' => 'imagem',
-            'videos' => 'video',
-            'audios' => 'audio',
-        ];
+    $contagemFinal = [
+        'imagem' => ($midiasExistentes['imagem']->count() ?? 0) - collect($remover)->filter(fn($id) => $ponto->midias()->find($id)?->tipo === 'imagem')->count()
+            + ($request->hasFile('imagens') ? count($request->file('imagens')) : 0),
 
-        foreach ($tipos as $campo => $tipo) {
-            if ($request->hasFile($campo)) {
-                foreach ($request->file($campo) as $ficheiro) {
-                    if (!$ficheiro->isValid()) continue;
+        'video' => ($midiasExistentes['video']->count() ?? 0) - collect($remover)->filter(fn($id) => $ponto->midias()->find($id)?->tipo === 'video')->count()
+            + ($request->hasFile('videos') ? count($request->file('videos')) : 0),
 
-                    $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+        'audio' => ($midiasExistentes['audio']->count() ?? 0) - collect($remover)->filter(fn($id) => $ponto->midias()->find($id)?->tipo === 'audio')->count()
+            + ($request->hasFile('audios') ? count($request->file('audios')) : 0),
+    ];
 
-                    $ponto->midias()->create([
-                        'tipo' => $tipo,
-                        'caminho' => $path,
-                    ]);
-                }
-            }
-        }
-
-        // Verifica se ainda tem pelo menos uma imagem
-        $temImagem = $ponto->midias()->where('tipo', 'imagem')->exists();
-        if (!$temImagem) {
-            return back()->withErrors(['imagens' => 'O ponto precisa ter pelo menos uma imagem.']);
-        }
-
-        return redirect()->route('rotas.show', $ponto->rota_id)->with('success', 'Ponto atualizado com sucesso!');
+    // Regras de validação extra
+    if ($contagemFinal['imagem'] < 1) {
+        return back()->withErrors(['imagens' => 'O ponto precisa ter pelo menos uma imagem.'])->withInput();
     }
+    if ($contagemFinal['video'] !== 1) {
+        return back()->withErrors(['videos' => 'O ponto deve ter exatamente um vídeo.'])->withInput();
+    }
+    if ($contagemFinal['audio'] !== 1) {
+        return back()->withErrors(['audios' => 'O ponto deve ter exatamente um áudio.'])->withInput();
+    }
+
+    // Remoção de mídias
+    if ($request->filled('remover_midias')) {
+        foreach ($request->remover_midias as $midiaId) {
+            $midia = $ponto->midias()->find($midiaId);
+            if ($midia) {
+                \Storage::disk('public')->delete($midia->caminho);
+                $midia->delete();
+            }
+        }
+    }
+
+    // Adição de novas mídias (restrita para vídeo e áudio)
+    $tipos = [
+        'imagens' => 'imagem',
+        'videos' => 'video',
+        'audios' => 'audio',
+    ];
+
+    foreach ($tipos as $campo => $tipo) {
+        if ($request->hasFile($campo)) {
+            // Restrição: apenas 1 vídeo e 1 áudio
+            if (in_array($tipo, ['video', 'audio']) && count($request->file($campo)) > 1) {
+                return back()->withErrors([$campo => 'Só pode adicionar um ' . $tipo . '.'])->withInput();
+            }
+
+            foreach ($request->file($campo) as $ficheiro) {
+                if (!$ficheiro->isValid()) continue;
+
+                $path = $ficheiro->store("pontos/{$tipo}s", 'public');
+
+                $ponto->midias()->create([
+                    'tipo' => $tipo,
+                    'caminho' => $path,
+                ]);
+            }
+        }
+    }
+
+    return redirect()->route('rotas.show', $ponto->rota_id)->with('success', 'Ponto atualizado com sucesso!');
+}
+
 
 
     /**

@@ -8,7 +8,6 @@
 
 
     <div class="max-w-6xl mx-auto px-4 py-6">
-        <!-- Bloco de detalhes -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
             <div class="border-b border-gray-200 pb-4 mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">{{ $rota['titulo'] }}</h1>
@@ -20,7 +19,7 @@
             </div>
         </div>
 
-        <!-- Imagem e Mapa lado a lado -->
+        <!-- Imagem e Mapa -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
             <div class="flex flex-col md:flex-row gap-4">
                 <!-- Imagem -->
@@ -36,7 +35,7 @@
                     <div id="map" class="h-[600px] rounded-lg shadow-md border border-gray-200 w-full z-0"></div>
                 </div>
 
-                <!-- Lista de Pontos Turísticos -->
+                <!-- Lista de Pontos -->
                 <div class="w-full md:w-1/3 overflow-y-auto max-h-[600px] border border-gray-200 rounded-lg p-4 bg-white shadow-md">
                     <h2 class="text-xl font-semibold mb-4">Pontos Turísticos</h2>
                     @forelse($rota->pontos as $ponto)

@@ -5,7 +5,6 @@
         </h1>
     </x-slot:heading>
 
-    <!-- Fonte-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 
     <div class="max-w-4xl mx-auto px-4 py-6">

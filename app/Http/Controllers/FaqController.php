@@ -12,10 +12,7 @@ class FaqController extends Controller
      */
     public function index(Request $request)
     {
-        // Fetch all FAQs from the database
         $faqs = Faq::all();
-
-        // Return the view with the FAQs
         return view('faqs.faqs', compact('faqs'));
     }
 
@@ -24,9 +21,7 @@ class FaqController extends Controller
      */
     public function create()
     {
-        // Return the view for creating a new FAQ
         return view('faqs.create');
-
     }
 
     /**
@@ -43,7 +38,7 @@ class FaqController extends Controller
         // criacao do FAQ
         Faq::create($request->all());
 
-        // redirecionar para a lista de FAQs com uma mensagem de sucesso
+        // redirecionar para a lista de FAQs
         return redirect()->route('faqs.index')->with('success', 'FAQ created successfully.');
     }
 
@@ -60,10 +55,8 @@ class FaqController extends Controller
      */
     public function edit(string $id)
     {
-        // procurar o FAQ pelo ID
-        $faq = Faq::findOrFail($id);
 
-        // retornar a view de edição com o FAQ encontrado
+        $faq = Faq::findOrFail($id);
         return view('faqs.edit', compact('faq'));
     }
 
@@ -78,11 +71,10 @@ class FaqController extends Controller
             'resposta' => 'required|string',
         ]);
 
-        // procurar o FAQ pelo ID e atualizar
         $faq = Faq::findOrFail($id);
         $faq->update($request->only('pergunta', 'resposta'));
 
-        // redirecionar para a lista de FAQs com uma mensagem de sucesso
+        // redirecionar para a lista
         return redirect()->route('faqs.index')->with('success', 'FAQ updated successfully.');
     }
 
@@ -91,30 +83,23 @@ class FaqController extends Controller
      */
     public function destroy(string $id)
     {
-        // procurar o FAQ pelo ID e apagar
         $faq = Faq::findOrFail($id);
         $faq->delete();
-        // redirecionar para a lista de FAQs com uma mensagem de sucesso
+        // redirecionar para a lista
         return redirect()->route('faqs.index')->with('success', 'FAQ deleted successfully.');
-        //
     }
 
     //PARA A APLICAÇÃO ANDROID
     public function indexApi(Request $request)
     {
-        // Fetch all FAQs from the database
         $faqs = Faq::all();
-
-        // Return the FAQs as JSON
         return response()->json($faqs);
     }
 
     public function showApi($id)
     {
-        // Find the FAQ by ID
+    
         $faq = Faq::findOrFail($id);
-
-        // Return the FAQ as JSON
         return response()->json($faq);
     }
 }

@@ -26,8 +26,6 @@
                     <h2 class="font-semibold text-lg text-brown">{{ $faq->pergunta }}</h2>
                     <p class="text-gray-700 mt-2">{{ $faq->resposta }}</p>
                 </div>
-
-                <!-- Ícones de ação -->
                 <div class="flex gap-2 text-xl self-end md:self-auto">
                     <a href="{{ route('faqs.edit', $faq->id) }}" class="text-yellow-500 hover:text-yellow-700">
                         <i class="fas fa-edit"></i>

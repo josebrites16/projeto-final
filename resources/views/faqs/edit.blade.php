@@ -19,7 +19,7 @@
                 <textarea name="resposta" class="w-full border border-gray-300 p-2 rounded" rows="4" required>{{ old('resposta', $faq->resposta) }}</textarea>
             </div>
 
-           <x-form-button>Salvar Alterações</x-form-button>
+           <x-form-button>Guardar Alterações</x-form-button>
         </form>
         </div>
 </x-layout>

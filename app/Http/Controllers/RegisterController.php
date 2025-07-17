@@ -21,7 +21,7 @@ class RegisterController extends Controller
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', Password::min(6), 'confirmed'] //confirmação
+            'password' => ['required', Password::min(6), 'confirmed']
         ], [
             'email.unique' => 'Este email já está em uso.',
             'password.confirmed' => 'A confirmação da password não coincide.',
@@ -44,7 +44,7 @@ class RegisterController extends Controller
             'password' => ['required', Password::min(6), 'confirmed'] //confirmação
         ]);
 
-        $attributes['tipo'] = 'user'; // Defina o tipo padrão como 'user'
+        $attributes['tipo'] = 'user'; //tipo padrão como 'user'
         $attributes['password'] = Hash::make($attributes['password']);
 
         User::create($attributes);

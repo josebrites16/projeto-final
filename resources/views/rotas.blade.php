@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 
     <div class="max-w-6xl mx-auto px-4 py-6">
-        <!-- Search & Filter -->
+        <!-- Pesquisa e filtro -->
         <div class="bg-white border border-gray-200 shadow-lg rounded-xl p-6 mb-8">
             <form action="{{ route('rotas.index') }}" method="GET">
                 <div class="flex flex-col md:flex-row items-center gap-4">
@@ -25,7 +25,7 @@
                     </button>
                 </div>
 
-                <!-- Filter Area -->
+                <!-- filtro -->
                 <div id="filterArea" class="hidden mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
+    <!-- Modal -->
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md text-center">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Confirmar eliminação</h2>
@@ -132,13 +132,11 @@
             }
         }
 
-        // Toggle filtros
         document.getElementById('toggleFilters').addEventListener('click', function () {
             const area = document.getElementById('filterArea');
             area.classList.toggle('hidden');
         });
 
-        // Leaflet Map
         const map = L.map('map', {
             maxBounds: [[85, -180], [-85, 180]],
             maxBoundsViscosity: 1.0,

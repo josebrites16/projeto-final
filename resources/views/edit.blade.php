@@ -83,7 +83,7 @@
                         </div>
                         <input type="hidden" name="coordenadas" id="coordenadas" value="">
                         <div class="flex space-x-2">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Guardar Alterações</button>
+                            <button type="submit" class="bg-brown text-white px-4 py-2 rounded hover:bg-brown-dark">Guardar Alterações</button>
                             <a href="{{ route('rotas.show', $rota->id) }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
                         </div>
                     </form>
@@ -91,10 +91,15 @@
                     <div class="mt-4 p-2 bg-gray-100 rounded-lg">
                         <h3 class="font-medium mb-2">Instruções de Edição:</h3>
                         <ul class="list-disc pl-5 text-sm">
-                            <li>Use as ferramentas de desenho no canto superior direito do mapa</li>
-                            <li>Para editar uma rota existente, clique na opção "Editar camadas"</li>
-                            <li>Para criar uma nova rota, use a opção "Desenhar polyline"</li>
-                            <li>Você pode apagar e redesenhar a rota utilizando o botão "Deletar camadas"</li>
+                            <li>Use as ferramentas de desenho no canto superior esquerdo do mapa</li>
+                            <li>Para editar uma rota existente, clique na opção "Edit Layers"</li>
+                            <li>Para criar uma nova rota, use a opção "Draw a polyline"</li>
+                            <li>A distância total será calculada automaticamente</li>
+                            <li>Após desenhar a rota, clique em "Guardar Alterações" para armazenar as informações</li>
+                            <li>Para adicionar pontos turísticos, clique no ícone "marker" e coloque no mapa onde deseja adicionar um ponto</li>
+                            <li>Após colocar o "marker" no mapa, irá aparecer um círculo cinzento, que ao carregar no mesmo abre o modal do ponto</li>
+                            <li>Preencha os detalhes do ponto turístico no modal que aparece</li>
+                            <li>Você pode apagar e redesenhar a rota utilizando o botão "Delete Layers"</li>
                         </ul>
                     </div>
                 </div>
@@ -219,17 +224,11 @@
 
             document.getElementById('modal-titulo').value = ponto.titulo || '';
             document.getElementById('modal-descricao').value = ponto.descricao || '';
-
-            // Desativa inputs
             document.getElementById('modal-titulo').disabled = true;
             document.getElementById('modal-descricao').disabled = true;
             document.getElementById('modal-imagens').disabled = true;
-
-            // Oculta a secção de imagens
             document.getElementById('modal-imagens').classList.add('hidden');
             document.getElementById('modal-imagens-preview').classList.add('hidden');
-
-            // Mostra botões relevantes
             document.getElementById('btn-salvar-ponto').style.display = 'none';
             document.getElementById('btn-eliminar-ponto').classList.remove('hidden');
         }
@@ -384,7 +383,7 @@
                     descricao: ponto.descricao,
                     coordenadas: coords,
                     imagens: ponto.midias?.map(m => m.caminho) || [],
-                    existente: true // <- Marca que vem do BD
+                    existente: true
                 };
 
                 const index = pontosTuristicos.length;
@@ -435,7 +434,6 @@
                     formData.append(`pontos[${index}][id]`, ponto.id);
                 }
 
-                // Só envia mídias se forem novas (não strings)
                 if (!ponto.existente || ponto.imagens.some(i => typeof i !== 'string')) {
                     ponto.imagens.forEach(img => {
                         if (typeof img !== 'string') {

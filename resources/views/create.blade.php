@@ -101,11 +101,12 @@
                             <li>Use as ferramentas de desenho no canto superior esquerdo do mapa.</li>
                             <li>A distância total será calculada automaticamente.</li>
                             <li>Após desenhar a rota, clique em "Criar" para armazenar as informações.</li>
-                            <li>Para adicionar pontos turísticos, clique no mapa onde deseja adicionar um ponto.</li>
+                            <li>Para adicionar pontos turísticos, clique no ícone "marker" e coloque no mapa onde deseja adicionar um ponto.</li>
+                            <li>Após colocar o "marker" no mapa, irá aparecer um circulo cinzento, que ao carregar no mesmo abre o modal do ponto</li>
                             <li>Preencha os detalhes do ponto turístico no modal que aparece.</li>
                             <li>Os pontos turísticos preenchidos serão marcados em azul.</li>
                             <li>Pode apagar e redesenhar a rota utilizando o botão "Delete layers".</li>
-                            <li>Certifique-se de que a rota está desenhada corretamente antes de salvar.</li>
+                            <li>Certifique-se de que a rota está desenhada corretamente antes de criar.</li>
                             <li>Pode editar ou excluir a rota posteriormente.</li>
                         </ul>
                     </div>
@@ -353,18 +354,8 @@
                 else if (file.type.startsWith("audio")) audios.push(file);
             }
 
-            if (imagens.length < 1) {
-                showAlertModal("Adicione pelo menos uma imagem.");
-                return;
-            }
-
-            if (videos.length !== 1) {
-                showAlertModal("Adicione exatamente um vídeo.");
-                return;
-            }
-
-            if (audios.length !== 1) {
-                showAlertModal("Adicione exatamente um áudio.");
+            if (imagens.length < 1 || videos.length < 1 || audios.length < 1) {
+                showAlertModal("Adicione exatamente um vídeo e um áudio, e pelo menos uma imagem.");
                 return;
             }
 
@@ -423,9 +414,7 @@
                 if (polylineLayer) {
                     // Obter os pontos anteriores
                     const antigosPontos = polylineLayer.getLatLngs();
-                    const combinados = antigosPontos.concat(novosPontos);
-
-                    // Substituir a polyline anterior pela nova combinada
+                    const combinados = antigosPontos.concat(novosPontos);                   
                     drawnItems.removeLayer(polylineLayer);
                     polylineLayer = L.polyline(combinados, {
                         color: 'blue',
@@ -553,7 +542,6 @@
                 return;
             }
 
-            // Remover do mapa
             if (markerRefs[index]) {
                 drawnItems.removeLayer(markerRefs[index]);
             }

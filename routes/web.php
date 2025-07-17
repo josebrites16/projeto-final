@@ -24,7 +24,7 @@ Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users', [UserController::class, 'users'])->name('users.index');
     Route::get('/admins', [UserController::class, 'admins'])->name('admins.index');
     Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');

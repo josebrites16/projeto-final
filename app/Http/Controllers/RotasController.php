@@ -15,30 +15,19 @@ class RotasController extends Controller
      */
     public function index(Request $request)
     {
-        // Obter parâmetros de pesquisa e filtro
         $search = $request->input('search');
         $zona = $request->input('zona');
-
-        // Iniciar a consulta
         $query = Rota::query();
-
-        // Aplicar filtro de pesquisa se fornecido
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('titulo', 'like', "%{$search}%")
                     ->orWhere('descricao', 'like', "%{$search}%");
             });
         }
-
-        // Aplicar filtro por zona se fornecido
         if ($zona) {
             $query->where('zona', $zona);
         }
-
-        // Executar a consulta
         $rotas = $query->get();
-
-        // Obter todas as zonas para o dropdown do filtro
         $zonas = ['Sul', 'Centro', 'Norte'];
 
         return view('rotas', compact('rotas', 'zonas', 'search', 'zona'));
@@ -49,9 +38,7 @@ class RotasController extends Controller
      */
     public function create()
     {
-        // Obter todas as zonas para o dropdown
         $zonas = ['Sul', 'Centro', 'Norte'];
-        // Retornar a view de criação com as zonas
         return view('create', compact('zonas'));
     }
 
@@ -230,7 +217,6 @@ class RotasController extends Controller
         }
     }
 
-    // Elimina os pontos que não foram enviados na atualização (foram removidos no frontend)
     $rota->pontos()->whereNotIn('id', $idsRecebidos)->delete();
 
     return redirect()->route('rotas.show', $rota->id)

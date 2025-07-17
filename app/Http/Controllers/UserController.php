@@ -12,18 +12,6 @@ use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $search = $request->input('search');
-        $users = User::when($search, function ($query) use ($search) {
-            return $query->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
-        })->get();
-
-        return view('users', compact('users'));
-    }
-
     public function admins(Request $request)
     {
         $search = $request->input('search');
@@ -38,6 +26,22 @@ class UserController extends Controller
             ->paginate(6);
 
         return view('admins', compact('users'));
+    }
+
+    public function users(Request $request)
+    {
+        $search = $request->input('search');
+        $users = User::where('tipo', '!=', 'admin')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->paginate(6);
+
+        return view('users', compact('users'));
     }
 
     public function show($id)
@@ -67,7 +71,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Não pode eliminar a si próprio.');
         }
 
-        $tipo = $user->tipo; // guardar antes de eliminar
+        $tipo = $user->tipo; 
         $user->delete();
 
         if ($tipo === 'admin') {
@@ -174,7 +178,7 @@ class UserController extends Controller
             'new_password' => 'required|string|min:6|confirmed',
         ]);
 
-        // Verifica se a senha atual está correta
+        // Verificação senha
         if (!Hash::check($request->input('current_password'), $user->password)) {
             return response()->json(['message' => 'A palavra-passe atual está incorreta.'], 422);
         }

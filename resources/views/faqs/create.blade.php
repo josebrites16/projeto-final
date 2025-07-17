@@ -17,7 +17,7 @@
                 <textarea name="resposta" class="w-full border border-gray-300 p-2 rounded" rows="4" required></textarea>
             </div>
 
-           <x-form-button>Salvar</x-form-button>
+           <x-form-button>Criar</x-form-button>
         </form>
     </div>
 </x-layout>
